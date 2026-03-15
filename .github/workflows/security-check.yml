@@ -17,10 +17,10 @@ jobs:
 
     steps:
       - name: ⬇️ Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: 🟢 Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 20
 
@@ -30,13 +30,11 @@ jobs:
       - name: 📦 Install dependencies
         run: pnpm install
 
-      # Dependency vulnerability check
       - name: 🔍 Run pnpm audit
         run: pnpm audit --audit-level=moderate
 
-      # Static security analysis
       - name: 📦 Setup Python for Semgrep
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.x'
 
@@ -46,7 +44,6 @@ jobs:
       - name: 🔎 Run Semgrep Scan
         run: semgrep --config=p/ci . --exclude=node_modules --exclude=.next
 
-      # Snyk security scan
       - name: 🔐 Run Snyk Security Scan
         uses: snyk/actions/node@master
         with:
