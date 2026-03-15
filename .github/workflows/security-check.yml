@@ -47,6 +47,7 @@ jobs:
       - name: 🔐 Run Snyk Security Scan
         uses: snyk/actions/node@master
         with:
-          command: monitor
+          command: test
+          args: --file=frontend/package.json
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
