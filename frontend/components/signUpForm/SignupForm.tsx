@@ -11,8 +11,8 @@ import Image from "next/image";
 
 import api from "@/lib/axios";
 
-import bgImageDesktop from "@/assets/common/GemLogin.svg";
-import bgImageMobile from "@/assets/common/GemLoginMobile.svg";
+import bgImageDesktop from "@/assets/common/SalonLogin.svg";
+import bgImageMobile from "@/assets/common/SalonLoginMobile.svg";
 import { AxiosError } from "axios";
 
 const carlito = Carlito({
@@ -291,7 +291,7 @@ const SignupForm = () => {
           <h2
             className={`${varta.className} text-xs sm:text-sm uppercase font-medium tracking-[0.2em] text-gray-900 mb-2`}
           >
-            GemCraft Learning Center
+            LUME SALON
           </h2>
           <h1
             className={`${carlito.className} text-3xl sm:text-4xl -mb-3 font-bold text-black text-center -mt-1`}
@@ -301,8 +301,9 @@ const SignupForm = () => {
           <p
             className={`${varta.className} text-gray-500 text-center mt-3 mb-3 text-xs sm:text-sm`}
           >
-            Join the <span className="text-[#FF5252] font-semibold">G L C</span>{" "}
-            community today
+            Experience the{" "}
+            <span className="text-[#FF5252] font-semibold">L U M E</span>{" "}
+            difference today
           </p>
         </div>
 
