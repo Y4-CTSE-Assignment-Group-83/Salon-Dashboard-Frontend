@@ -79,9 +79,13 @@ export default function CustomerPaymentsPage() {
         }));
         window.location.href = payment.checkoutUrl;
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Payment error:', error);
-      toast.error(error.response?.data?.message || 'Failed to process payment');
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data?.message || 'Failed to process payment');
+      } else {
+        toast.error('Failed to process payment');
+      }
     } finally {
       setProcessing(null);
     }
