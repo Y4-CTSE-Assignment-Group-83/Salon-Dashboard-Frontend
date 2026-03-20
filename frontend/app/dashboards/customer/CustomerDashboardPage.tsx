@@ -308,7 +308,7 @@ const CustomerDashboardPage = () => {
         return <AppointmentsPage />;
       case "my_appointments":
         return <MyAppointmentsPage />;
-      case "payment":
+      case "payments":
         return <PaymentsPage />;
       case "profile":
         return <ProfilePage />;
