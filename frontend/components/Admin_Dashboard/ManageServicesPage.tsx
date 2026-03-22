@@ -142,7 +142,7 @@ export default function ManageServicesPage() {
         <table className="w-full text-left">
           <thead className="bg-gray-800 text-gray-300 text-sm uppercase">
             <tr>
-              <th className="p-4">Image</th>
+              {/* <th className="p-4">Image</th> */}
               <th className="p-4">Name</th>
               <th className="p-4">Category</th>
               <th className="p-4">Price</th>
@@ -157,7 +157,7 @@ export default function ManageServicesPage() {
                 key={service._id}
                 className="border-t border-gray-800 hover:bg-gray-800 transition"
               >
-                <td className="p-4">
+                {/* <td className="p-4">
                   <img
                     src={
                       service.image
@@ -166,7 +166,7 @@ export default function ManageServicesPage() {
                     }
                     className="w-14 h-14 object-cover rounded-lg border border-gray-700"
                   />
-                </td>
+                </td> */}
 
                 <td className="p-4 font-medium">{service.name}</td>
                 <td className="p-4 text-gray-400">{service.category}</td>
