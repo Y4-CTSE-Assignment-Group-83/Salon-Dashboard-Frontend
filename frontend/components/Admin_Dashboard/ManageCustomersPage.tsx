@@ -554,15 +554,15 @@ const ManageCustomersPage = () => {
       </AnimatePresence>
 
       {/* Desktop Table - Hidden on mobile */}
-      <div className="hidden sm:block overflow-x-auto bg-white rounded-3xl shadow border border-rose-200">
+      <div className="hidden sm:block overflow-x-auto bg-gray-900 rounded-3xl shadow border border-gray-700">
         <table className="min-w-full text-sm">
-          <thead className="bg-gradient-to-r from-rose-50 to-amber-50 border-b border-rose-200">
+          <thead className="bg-gray-800 border-b border-gray-700">
             <tr>
-              <th className="px-4 py-3 text-left text-rose-800">Customer</th>
-              <th className="px-4 py-3 text-left text-rose-800">Contact</th>
-              <th className="px-4 py-3 text-left text-rose-800">Status</th>
-              <th className="px-4 py-3 text-left text-rose-800">Joined</th>
-              <th className="px-4 py-3 text-right text-rose-800">Actions</th>
+              <th className="px-4 py-3 text-left text-gray-300">Customer</th>
+              <th className="px-4 py-3 text-left text-gray-300">Contact</th>
+              <th className="px-4 py-3 text-left text-gray-300">Status</th>
+              <th className="px-4 py-3 text-left text-gray-300">Joined</th>
+              <th className="px-4 py-3 text-right text-gray-300">Actions</th>
             </tr>
           </thead>
 
@@ -579,23 +579,23 @@ const ManageCustomersPage = () => {
               return (
                 <tr
                   key={customer._id}
-                  className="border-b last:border-none hover:bg-rose-50/50"
+                  className="border-b border-gray-700 last:border-none hover:bg-gray-800/50"
                 >
                   {/* Customer */}
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
                       {/* Avatar */}
-                      <div className="h-12 w-12 rounded-full bg-gradient-to-br from-rose-100 to-amber-100 text-rose-700 flex items-center justify-center font-semibold overflow-hidden border border-rose-300">
-                        <span className="text-rose-700">
+                      <div className="h-12 w-12 rounded-full bg-gradient-to-br from-gray-700 to-gray-600 text-gray-300 flex items-center justify-center font-semibold overflow-hidden border border-gray-600">
+                        <span className="text-gray-300">
                           {getInitials(customer.firstname, customer.lastname)}
                         </span>
                       </div>
 
                       <div className="min-w-0">
-                        <p className="font-semibold font-md truncate text-rose-900">
+                        <p className="font-semibold font-md truncate text-gray-200">
                           {customer.firstname} {customer.lastname}
                         </p>
-                        <p className="text-sm font-normal text-gray-500 truncate">
+                        <p className="text-sm font-normal text-gray-400 truncate">
                           {customer.gender || "—"}
                         </p>
                       </div>
@@ -604,10 +604,10 @@ const ManageCustomersPage = () => {
 
                   {/* Contact */}
                   <td className="px-4 py-3">
-                    <p className="truncate font-medium text-rose-800">
+                    <p className="truncate font-medium text-gray-300">
                       {customer.email}
                     </p>
-                    <p className="text-xs text-gray-500 truncate">
+                    <p className="text-xs text-gray-400 truncate">
                       {customer.phone || "Not Available"}
                     </p>
                   </td>
@@ -617,8 +617,8 @@ const ManageCustomersPage = () => {
                     <span
                       className={`px-3 py-2 rounded-full text-xs font-semibold ${
                         customer.isActive
-                          ? "bg-green-100 text-green-800 border border-green-400"
-                          : "bg-rose-100 text-rose-800 border border-rose-400"
+                          ? "bg-green-900/50 text-green-300 border border-green-700"
+                          : "bg-red-900/50 text-red-300 border border-red-700"
                       }`}
                     >
                       {customer.isActive ? "ACTIVE" : "INACTIVE"}
@@ -627,14 +627,14 @@ const ManageCustomersPage = () => {
 
                   {/* Joined Date */}
                   <td className="px-4 py-3">
-                    <p className="text-sm text-rose-700">{joinedDate}</p>
+                    <p className="text-sm text-gray-400">{joinedDate}</p>
                   </td>
 
                   {/* Actions */}
                   <td className="px-6 py-4 text-right space-x-2 whitespace-nowrap">
                     <button
                       onClick={() => openViewModal(customer)}
-                      className="px-3 py-2 rounded-3xl border bg-amber-100 text-amber-800 text-xs font-medium hover:bg-amber-200 transition-colors inline-flex items-center space-x-1"
+                      className="px-3 py-2 rounded-3xl border border-gray-600 bg-gray-800 text-gray-300 text-xs font-medium hover:bg-gray-700 transition-colors inline-flex items-center space-x-1"
                       title="View details"
                     >
                       <Eye className="w-3.5 h-3.5" />
@@ -643,7 +643,7 @@ const ManageCustomersPage = () => {
 
                     <button
                       onClick={() => openEditModal(customer)}
-                      className="px-3 py-2 rounded-3xl border bg-rose-100 text-rose-800 text-xs font-medium hover:bg-rose-200 transition-colors inline-flex items-center space-x-1"
+                      className="px-3 py-2 rounded-3xl border border-gray-600 bg-gray-800 text-gray-300 text-xs font-medium hover:bg-gray-700 transition-colors inline-flex items-center space-x-1"
                       title="Edit customer"
                     >
                       <Edit className="w-3.5 h-3.5" />
@@ -654,8 +654,8 @@ const ManageCustomersPage = () => {
                       onClick={() => handleToggleStatus(customer)}
                       className={`px-3 py-2 rounded-3xl text-xs font-medium inline-flex items-center space-x-1 ${
                         customer.isActive
-                          ? "bg-orange-200 text-black border border-black hover:bg-orange-200"
-                          : "bg-green-100 text-green-800 border border-green-400 hover:bg-green-200"
+                          ? "bg-orange-900/50 text-orange-300 border border-orange-700 hover:bg-orange-800/50"
+                          : "bg-green-900/50 text-green-300 border border-green-700 hover:bg-green-800/50"
                       }`}
                       title={customer.isActive ? "Deactivate" : "Activate"}
                     >
@@ -671,7 +671,7 @@ const ManageCustomersPage = () => {
 
                     <button
                       onClick={() => confirmDelete(customer)}
-                      className="px-3 py-2 rounded-3xl bg-gray-900 text-white text-xs font-medium hover:bg-black transition-colors inline-flex items-center space-x-1"
+                      className="px-3 py-2 rounded-3xl bg-red-600 text-white text-xs font-medium hover:bg-red-700 transition-colors inline-flex items-center space-x-1"
                       title="Delete customer"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -688,17 +688,17 @@ const ManageCustomersPage = () => {
                   <div className="py-12 text-center">
                     <div className="inline-block mb-8 mt-4">
                       <div className="relative">
-                        <div className="w-20 h-20 rounded-lg bg-gradient-to-br from-rose-400 to-amber-400 rotate-45 transform"></div>
+                        <div className="w-20 h-20 rounded-lg bg-gradient-to-br from-gray-700 to-gray-600 rotate-45 transform"></div>
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <User className="w-10 h-10 text-white" />
+                          <User className="w-10 h-10 text-gray-400" />
                         </div>
                       </div>
                     </div>
 
-                    <h3 className="text-xl font-semibold text-rose-800 mb-2">
+                    <h3 className="text-xl font-semibold text-gray-300 mb-2">
                       No Customers Found
                     </h3>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-gray-500">
                       Customer records will appear here
                     </p>
                   </div>
@@ -709,18 +709,18 @@ const ManageCustomersPage = () => {
         </table>
 
         {/* Pagination */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-4 py-3 border-t border-rose-200 bg-rose-50/30">
-          <p className="text-xs text-gray-500">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-4 py-3 border-t border-gray-700 bg-gray-800/30">
+          <p className="text-xs text-gray-400">
             Showing{" "}
-            <span className="font-semibold text-rose-800">
+            <span className="font-semibold text-gray-300">
               {filteredCustomers.length === 0 ? 0 : (page - 1) * pageSize + 1}
             </span>{" "}
             to{" "}
-            <span className="font-semibold text-rose-800">
+            <span className="font-semibold text-gray-300">
               {Math.min(page * pageSize, filteredCustomers.length)}
             </span>{" "}
             of{" "}
-            <span className="font-semibold text-rose-800">
+            <span className="font-semibold text-gray-300">
               {filteredCustomers.length}
             </span>{" "}
             customers
@@ -730,12 +730,12 @@ const ManageCustomersPage = () => {
             <button
               onClick={goPrev}
               disabled={page === 1}
-              className="px-2 py-1 rounded-lg bg-white border border-rose-300 text-rose-700 text-xs disabled:opacity-50 hover:bg-rose-50"
+              className="px-2 py-1 rounded-lg bg-gray-800 border border-gray-600 text-gray-300 text-xs disabled:opacity-50 hover:bg-gray-700"
             >
               Prev
             </button>
 
-            <div className="text-sm text-rose-700">
+            <div className="text-sm text-gray-300">
               Page <span className="font-semibold">{page}</span> /{" "}
               <span className="font-semibold">{totalPages}</span>
             </div>
@@ -743,7 +743,7 @@ const ManageCustomersPage = () => {
             <button
               onClick={goNext}
               disabled={page === totalPages}
-              className="px-2 py-1 rounded-lg bg-white border border-rose-300 text-rose-700 text-xs disabled:opacity-50 hover:bg-rose-50"
+              className="px-2 py-1 rounded-lg bg-gray-800 border border-gray-600 text-gray-300 text-xs disabled:opacity-50 hover:bg-gray-700"
             >
               Next
             </button>
@@ -1092,16 +1092,16 @@ const CustomerModal = ({
         title: "Update Customer Details?",
         html: `
           <p>You are about to update the details for:</p>
-          <p class="font-semibold mt-1 text-rose-800">${form.firstname} ${form.lastname}</p>
-          <div class="mt-3 p-3 bg-rose-50 rounded-lg text-sm">
-            <p class="font-medium mb-1 text-rose-700">Changes will include:</p>
-            <ul class="list-disc list-inside space-y-1 text-center font-semibold text-gray-700">
+          <p class="font-semibold mt-1 text-gray-300">${form.firstname} ${form.lastname}</p>
+          <div class="mt-3 p-3 bg-gray-800 rounded-lg text-sm">
+            <p class="font-medium mb-1 text-gray-400">Changes will include:</p>
+            <ul class="list-disc list-inside space-y-1 text-center font-semibold text-gray-300">
               ${form.firstname !== customer?.firstname ? `<li>First name: ${customer?.firstname} → ${form.firstname}</li>` : ""}
               ${form.lastname !== customer?.lastname ? `<li>Last name: ${customer?.lastname} → ${form.lastname}</li>` : ""}
               ${form.phone !== customer?.phone ? `<li>Phone: ${customer?.phone || "Not set"} → ${form.phone}</li>` : ""}
               ${form.gender !== customer?.gender ? `<li>Gender: ${customer?.gender || "Not set"} → ${form.gender}</li>` : ""}
             </ul>
-            <p class="mt-2 text-[11px] text-amber-700 italic">Note: Email cannot be changed.</p>
+            <p class="mt-2 text-[11px] text-gray-500 italic">Note: Email cannot be changed.</p>
           </div>
         `,
         icon: "question",
@@ -1111,9 +1111,10 @@ const CustomerModal = ({
         confirmButtonColor: "#e11d48",
         cancelButtonColor: "#6b7280",
         customClass: {
-          popup: "!rounded-3xl !font-inter",
-          title: "!text-lg !font-bold !text-rose-800",
-          htmlContainer: "!text-sm !text-gray-700",
+          popup:
+            "!rounded-3xl !font-inter !bg-gray-900 !border !border-gray-700",
+          title: "!text-lg !font-bold !text-gray-300",
+          htmlContainer: "!text-sm !text-gray-400",
           confirmButton: "!rounded-full !px-6 !py-2 !text-sm !font-semibold",
           cancelButton: "!rounded-full !px-6 !py-2 !text-sm !font-semibold",
         },
@@ -1134,13 +1135,13 @@ const CustomerModal = ({
       animate={{ scale: 1, y: 0, opacity: 1 }}
       exit={{ scale: 0.95, y: 20, opacity: 0 }}
       transition={{ duration: 0.2, ease: "easeOut" }}
-      className="w-full max-w-2xl bg-white rounded-3xl border border-rose-200 shadow-xl overflow-hidden"
+      className="w-full max-w-2xl bg-gray-900 rounded-3xl border border-gray-700 shadow-xl overflow-hidden"
     >
       {/* Header */}
-      <div className="px-6 py-5 border-b border-rose-200 bg-gradient-to-r from-rose-50 to-amber-50">
+      <div className="px-6 py-5 border-b border-gray-700 bg-gray-800">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-semibold text-rose-800">
+            <h3 className="text-lg font-semibold text-gray-200">
               {isView ? "Customer Details" : "Edit Customer"}
             </h3>
             <p className="text-xs text-gray-500 mt-1">
@@ -1152,7 +1153,7 @@ const CustomerModal = ({
           <button
             onClick={onClose}
             disabled={saving}
-            className="px-4 py-2 rounded-2xl text-xs font-medium text-rose-600 hover:text-rose-800 bg-white hover:bg-rose-50 border border-rose-300 transition-colors disabled:opacity-50"
+            className="px-4 py-2 rounded-2xl text-xs font-medium text-gray-300 hover:text-gray-200 bg-gray-800 hover:bg-gray-700 border border-gray-600 transition-colors disabled:opacity-50"
           >
             Close
           </button>
@@ -1168,8 +1169,8 @@ const CustomerModal = ({
               <span
                 className={`px-4 py-2 rounded-full text-sm font-semibold ${
                   customer.isActive
-                    ? "bg-green-100 text-green-800 border border-green-400"
-                    : "bg-rose-100 text-rose-800 border border-rose-400"
+                    ? "bg-green-900/50 text-green-300 border border-green-700"
+                    : "bg-red-900/50 text-red-300 border border-red-700"
                 }`}
               >
                 {customer.isActive ? "ACTIVE" : "INACTIVE"}
@@ -1180,26 +1181,26 @@ const CustomerModal = ({
           {/* Row 1: First Name + Last Name */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-rose-700">
+              <label className="text-xs font-medium text-gray-400">
                 First name {!isView && <span className="text-red-500">*</span>}
               </label>
               <input
                 value={form.firstname}
                 onChange={(e) => updateField("firstname", e.target.value)}
                 disabled={isView}
-                className="w-full px-3 py-2.5 text-sm text-rose-900 border border-rose-300 rounded-xl focus:border-amber-500 focus:ring-1 focus:ring-amber-200 outline-none transition-colors disabled:bg-rose-50 disabled:text-rose-500"
+                className="w-full px-3 py-2.5 text-sm text-gray-200 bg-gray-800 border border-gray-600 rounded-xl focus:border-gray-500 focus:ring-1 focus:ring-gray-500 outline-none transition-colors disabled:bg-gray-800/50 disabled:text-gray-500"
                 placeholder="John"
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-rose-700">
+              <label className="text-xs font-medium text-gray-400">
                 Last name {!isView && <span className="text-red-500">*</span>}
               </label>
               <input
                 value={form.lastname}
                 onChange={(e) => updateField("lastname", e.target.value)}
                 disabled={isView}
-                className="w-full px-3 py-2.5 text-sm text-rose-900 border border-rose-300 rounded-xl focus:border-amber-500 focus:ring-1 focus:ring-amber-200 outline-none transition-colors disabled:bg-rose-50 disabled:text-rose-500"
+                className="w-full px-3 py-2.5 text-sm text-gray-200 bg-gray-800 border border-gray-600 rounded-xl focus:border-gray-500 focus:ring-1 focus:ring-gray-500 outline-none transition-colors disabled:bg-gray-800/50 disabled:text-gray-500"
                 placeholder="Doe"
               />
             </div>
@@ -1208,11 +1209,11 @@ const CustomerModal = ({
           {/* Row 2: Email + Phone */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-rose-700">Email</label>
+              <label className="text-xs font-medium text-gray-400">Email</label>
               <input
                 value={form.email}
                 disabled={true}
-                className="w-full px-3 py-2.5 text-sm text-rose-500 border border-rose-300 rounded-xl bg-rose-50 cursor-not-allowed"
+                className="w-full px-3 py-2.5 text-sm text-gray-500 bg-gray-800/50 border border-gray-600 rounded-xl cursor-not-allowed"
                 placeholder="john.doe@example.com"
               />
               {isEdit && (
@@ -1222,14 +1223,14 @@ const CustomerModal = ({
               )}
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-rose-700">
+              <label className="text-xs font-medium text-gray-400">
                 Phone {!isView && <span className="text-red-500">*</span>}
               </label>
               <input
                 value={form.phone}
                 onChange={(e) => updateField("phone", e.target.value)}
                 disabled={isView}
-                className="w-full px-3 py-2.5 text-sm text-rose-900 border border-rose-300 rounded-xl focus:border-amber-500 focus:ring-1 focus:ring-amber-200 outline-none transition-colors disabled:bg-rose-50 disabled:text-rose-500"
+                className="w-full px-3 py-2.5 text-sm text-gray-200 bg-gray-800 border border-gray-600 rounded-xl focus:border-gray-500 focus:ring-1 focus:ring-gray-500 outline-none transition-colors disabled:bg-gray-800/50 disabled:text-gray-500"
                 placeholder="+44 7700 900123"
               />
             </div>
@@ -1237,7 +1238,7 @@ const CustomerModal = ({
 
           {/* Row 3: Gender */}
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-rose-700">
+            <label className="text-xs font-medium text-gray-400">
               Gender {!isView && <span className="text-red-500">*</span>}
             </label>
             <div className="flex gap-2">
@@ -1245,11 +1246,11 @@ const CustomerModal = ({
                 <label
                   key={g}
                   className={`
-                  flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl border cursor-pointer
+                  flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl border cursor-pointer transition-colors
                   ${
                     form.gender === g
-                      ? "border-amber-500 bg-amber-50"
-                      : "border-rose-300 bg-white hover:bg-rose-50"
+                      ? "border-gray-500 bg-gray-700"
+                      : "border-gray-600 bg-gray-800 hover:bg-gray-700"
                   }
                   ${isView ? "cursor-default" : ""}
                 `}
@@ -1261,9 +1262,9 @@ const CustomerModal = ({
                     checked={form.gender === g}
                     onChange={() => updateField("gender", g)}
                     disabled={isView}
-                    className="w-3.5 h-3.5 text-amber-500 border-rose-300 focus:ring-0"
+                    className="w-3.5 h-3.5 text-gray-500 border-gray-600 bg-gray-700 focus:ring-0 focus:ring-offset-0"
                   />
-                  <span className="text-xs text-rose-700 capitalize">{g}</span>
+                  <span className="text-xs text-gray-300 capitalize">{g}</span>
                 </label>
               ))}
             </div>
@@ -1272,12 +1273,12 @@ const CustomerModal = ({
       </div>
 
       {/* Footer */}
-      <div className="px-6 py-4 border-t border-rose-200 bg-rose-50/30">
+      <div className="px-6 py-4 border-t border-gray-700 bg-gray-800/50">
         <div className="flex items-center justify-end gap-3">
           <button
             onClick={onClose}
             disabled={saving}
-            className="px-6 py-2.5 rounded-xl text-xs font-medium text-rose-700 bg-white border border-rose-400 hover:bg-rose-50 transition-colors disabled:opacity-50"
+            className="px-6 py-2.5 rounded-xl text-xs font-medium text-gray-300 bg-gray-800 border border-gray-600 hover:bg-gray-700 transition-colors disabled:opacity-50"
           >
             {isView ? "Close" : "Cancel"}
           </button>
@@ -1285,7 +1286,7 @@ const CustomerModal = ({
             <button
               onClick={handleSubmit}
               disabled={saving}
-              className="px-6 py-2.5 rounded-xl text-xs font-medium text-white bg-gradient-to-r from-rose-500 to-amber-500 hover:shadow-lg transition-all disabled:opacity-50 min-w-[120px]"
+              className="px-6 py-2.5 rounded-xl text-xs font-medium text-white bg-gradient-to-r from-gray-700 to-gray-600 hover:from-gray-600 hover:to-gray-500 transition-all disabled:opacity-50 min-w-[120px]"
             >
               {saving ? "Saving..." : "Update Customer"}
             </button>

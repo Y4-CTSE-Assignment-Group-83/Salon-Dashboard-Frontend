@@ -14,7 +14,7 @@ import { AxiosError } from "axios";
 import api from "@/lib/axios";
 import { useAuthContext } from "@/app/context/AuthContext";
 
-import bgImageDesktop from "@/assets/common/SalonLogin.svg";
+import bgImageDesktop from "@/assets/common/SalonLoginLatest.svg";
 import bgImageMobile from "@/assets/common/SalonLoginMobile.svg";
 
 const varta = Varta({

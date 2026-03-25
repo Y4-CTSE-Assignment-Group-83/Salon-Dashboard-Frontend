@@ -5,7 +5,7 @@ import { useAuthRedirect } from "@/app/hooks/useAuthRedirect";
 import { motion } from "framer-motion";
 import Lottie from "lottie-react";
 import Image from "next/image";
-import SplashBG from "../assets/common/SplashBG.png";
+import SplashBG from "../assets/common/SpalshBGV2.svg";
 import gemAnimation from "@/public/lottie/salon.json";
 import { Inter } from "next/font/google";
 
@@ -19,7 +19,7 @@ const inter = Inter({
 export default function SplashScreen() {
   const [readyToRedirect, setReadyToRedirect] = useState(false);
 
-  const SPLASH_DURATION = 8500;
+  const SPLASH_DURATION = 28500;
 
   const loadingMessages = [
     "Preparing your salon experience...",
@@ -71,7 +71,7 @@ export default function SplashScreen() {
           initial={{ opacity: 0, scale: 0.96 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="sm:w-54 sm:h-54 w-40 h-40 sm:-mt-14 -mt-24 relative"
+          className="sm:w-74 sm:h-74 w-40 h-40 sm:-mt-14 -mt-24 relative"
         >
           <Lottie
             animationData={gemAnimation}
@@ -85,7 +85,7 @@ export default function SplashScreen() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.8, duration: 0.6, ease: "easeOut" }}
-          className="mt-6 flex flex-col items-center relative"
+          className="mt-6 sm:-mt-8 flex flex-col items-center relative"
         >
           {/* Subtle shadow background that fades */}
           <motion.div
@@ -136,7 +136,7 @@ export default function SplashScreen() {
                 <span
                   className="block font-black tracking-tight bg-gradient-to-br
           from-rose-900 via-rose-700 to-amber-700
-          dark:from-rose-300 dark:via-rose-200 dark:to-amber-200
+          dark:from-rose-700 dark:via-rose-500 dark:to-amber-300
           bg-clip-text text-transparent text-5xl sm:text-7xl
           leading-none mb-2 sm:mb-0"
                 >
@@ -183,7 +183,7 @@ export default function SplashScreen() {
               duration: 0.8,
               ease: "easeOut",
             }}
-            className="mt-8 text-md sm:text-base font-medium tracking-widest
+            className="mt-8 text-md sm:text-3xl text-center font-medium tracking-widest
       text-rose-700 uppercase"
           >
             Where Beauty Begins
