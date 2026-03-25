@@ -1,0 +1,54 @@
+name: CI/CD - Frontend (Next.js + ECR + ECS)
+
+on:
+  push:
+    branches:
+      - main
+      - development
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 📥 Checkout
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
+
+      # 🐳 Docker setup
+      - name: 🐳 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # 🔐 AWS credentials
+      - name: 🔐 Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # 🔑 Login to ECR
+      - name: 🔑 Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # 🧪 Debug (optional)
+      - name: 🧪 Verify AWS Identity
+        run: aws sts get-caller-identity
+
+      # 🏗 Build & Push Docker Image
+      - name: 🏗 Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          push: true
+          tags: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/salon-frontend:latest
+
+      # 🚀 Deploy to ECS
+      - name: 🚀 Deploy to ECS
+        run: |
+          aws ecs update-service \
+            --cluster salon-frontend-cluster \
+            --service salon-frontend-service \
+            --force-new-deployment \
+            --region ${{ secrets.AWS_REGION }}
