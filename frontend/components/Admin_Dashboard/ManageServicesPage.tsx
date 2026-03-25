@@ -43,7 +43,9 @@ export default function ManageServicesPage() {
   // 🔥 FIX: fetch wrapper (avoid direct setState in effect)
   const fetchServices = async () => {
     try {
-      const res = await axios.get(API_URL);
+      const res = await axios.get(API_URL, {
+        withCredentials: true,
+      });
       setServices(res.data?.data || []);
     } catch (error) {
       console.error(error);
@@ -88,10 +90,12 @@ export default function ManageServicesPage() {
       if (editingService) {
         await axios.put(`${API_URL}/${editingService._id}`, formData, {
           headers: { "Content-Type": "multipart/form-data" },
+          withCredentials: true,
         });
       } else {
         await axios.post(API_URL, formData, {
           headers: { "Content-Type": "multipart/form-data" },
+          withCredentials: true,
         });
       }
 
@@ -115,7 +119,9 @@ export default function ManageServicesPage() {
 
   const handleDelete = async (id: string) => {
     if (confirm("Delete this service?")) {
-      await axios.delete(`${API_URL}/${id}`);
+      await axios.delete(`${API_URL}/${id}`, {
+        withCredentials: true,
+      });
       await fetchServices();
     }
   };
