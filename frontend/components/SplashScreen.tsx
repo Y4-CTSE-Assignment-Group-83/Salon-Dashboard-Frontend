@@ -19,7 +19,7 @@ const inter = Inter({
 export default function SplashScreen() {
   const [readyToRedirect, setReadyToRedirect] = useState(false);
 
-  const SPLASH_DURATION = 28500;
+  const SPLASH_DURATION = 8500;
 
   const loadingMessages = [
     "Preparing your salon experience...",
