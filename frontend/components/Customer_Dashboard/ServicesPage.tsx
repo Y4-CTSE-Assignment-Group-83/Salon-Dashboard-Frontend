@@ -154,7 +154,9 @@ export default function ServicesPage() {
   // 🔄 Fetch services
   const fetchServices = async () => {
     try {
-      const res = await axios.get(API_URL);
+      const res = await axios.get(API_URL, {
+        withCredentials: true,
+      });
       console.log("API RESPONSE:", res.data);
       setServices(res.data?.data || []);
     } catch (error) {
