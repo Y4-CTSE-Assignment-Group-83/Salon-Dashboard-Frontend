@@ -1,11 +1,18 @@
+export type PaymentStatus =
+  | 'PENDING'
+  | 'PROCESSING'
+  | 'COMPLETED'
+  | 'FAILED'
+  | 'REFUNDED';
+
 export interface Payment {
-  _id: string;
+  paymentId: string;
   bookingId: string;
   amount: number;
   currency: string;
   customerEmail: string;
   customerName: string;
-  status: 'PENDING' | 'Processing' | 'COMPLETED' | 'Failed' | 'Refunded';
+  status: PaymentStatus;
   lemonSqueezyOrderId?: string;
   lemonSqueezyVariantId?: string;
   lemonSqueezyCheckoutRequestId?: string;
@@ -51,4 +58,12 @@ export interface PaymentFilters {
   dateFrom?: string;
   dateTo?: string;
   customerName?: string;
+}
+
+export interface UpdatePaymentRequest {
+  customerName: string;
+  customerEmail: string;
+  amount: number;
+  currency: string;
+  status: PaymentStatus;
 }

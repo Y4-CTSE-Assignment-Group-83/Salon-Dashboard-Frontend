@@ -1,110 +1,147 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  DollarSign, 
-  CreditCard, 
-  Calendar, 
-  User, 
-  Phone, 
-  Mail, 
-  Clock,
-  CheckCircle,
-  XCircle,
+import {
+  DollarSign,
+  Mail,
+  Calendar,
+  CreditCard,
   RefreshCw,
-  Printer,
   Download,
-  ArrowLeft
+  ArrowLeft,
+  Trash2,
+  Pencil,
+  Save,
+  XCircle,
+  Hash,
+  CheckCircle,
+  Clock,
+  User,
 } from 'lucide-react';
 import { toast } from 'react-toastify';
-import axios from 'axios';
+import { Payment, PaymentStatus } from '@/app/types/payment';
 import { PaymentCard } from '@/components/payments/PaymentCard';
 import { PaymentStatsDisplay } from '@/components/payments/PaymentStats';
 import { PaymentFiltersComponent } from '@/components/payments/PaymentFilters';
-import { Booking } from '@/app/types/payment';
 import { usePayments } from '@/app/hooks/usePayments';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002';
+type EditFormState = {
+  customerName: string;
+  customerEmail: string;
+  amount: string;
+  currency: string;
+  status: PaymentStatus;
+};
 
 export default function ManagePaymentsPage() {
   const {
-    bookings,
-    filteredBookings,
+    payments,
+    filteredPayments,
     loading,
     processing,
     stats,
-    selectedBooking,
+    selectedPayment,
     filters,
     setFilters,
-    setSelectedBooking,
-    processPayment,
-    updatePaymentStatus,
+    setSelectedPayment,
+    updatePayment,
+    deletePayment,
     refreshData,
   } = usePayments();
 
+  console.log('Payments:', payments);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showDetails, setShowDetails] = useState(false);
-  const [refundModal, setRefundModal] = useState<{ show: boolean; booking: Booking | null }>({
+  const [isEditing, setIsEditing] = useState(false);
+  const [deleteModal, setDeleteModal] = useState<{
+    show: boolean;
+    payment: Payment | null;
+  }>({
     show: false,
-    booking: null,
+    payment: null,
   });
 
-  const handleRefund = async (booking: Booking) => {
-    try {
-      const response = await axios.post(`${API_URL}/api/payments/refund`, {
-        bookingId: booking._id,
-        amount: booking.servicePrice,
-      });
+  const [editForm, setEditForm] = useState<EditFormState>({
+    customerName: '',
+    customerEmail: '',
+    amount: '',
+    currency: 'USD',
+    status: 'PENDING',
+  });
 
-      if (response.data.success) {
-        await updatePaymentStatus(booking._id, 'Refunded');
-        toast.success('Refund processed successfully');
-        setRefundModal({ show: false, booking: null });
-      }
-    } catch (error) {
-      console.error('Refund error:', error);
-      toast.error('Failed to process refund');
+  useEffect(() => {
+    if (selectedPayment) {
+      setEditForm({
+        customerName: selectedPayment.customerName || '',
+        customerEmail: selectedPayment.customerEmail || '',
+        amount: String(selectedPayment.amount ?? ''),
+        currency: selectedPayment.currency || 'USD',
+        status: selectedPayment.status,
+      });
     }
-  };
+  }, [selectedPayment]);
 
   const exportToCSV = () => {
-    const headers = ['Customer', 'Email', 'Phone', 'Service', 'Amount', 'Status', 'Date', 'Queue'];
-    const data = filteredBookings.map(b => [
-      b.customerName,
-      b.customerEmail || 'N/A',
-      b.customerPhone,
-      b.serviceName,
-      b.servicePrice,
-      b.paymentStatus,
-      new Date(b.appointmentDate).toLocaleDateString(),
-      `#${b.queueNumber}`,
+    const headers = [
+      'Payment ID',
+      'Booking ID',
+      'Customer Name',
+      'Customer Email',
+      'Amount',
+      'Currency',
+      'Status',
+      'Transaction ID',
+      'Created At',
+      'Paid At',
+    ];
+
+    const data = filteredPayments.map((payment) => [
+      payment.paymentId,
+      payment.bookingId,
+      payment.customerName,
+      payment.customerEmail || 'N/A',
+      payment.amount,
+      payment.currency,
+      payment.status,
+      payment.transactionId || 'N/A',
+      new Date(payment.createdAt).toLocaleString(),
+      payment.paidAt ? new Date(payment.paidAt).toLocaleString() : 'N/A',
     ]);
 
-    const csv = [headers, ...data].map(row => row.join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
+    const csv = [headers, ...data]
+      .map((row) =>
+        row
+          .map((cell) => `"${String(cell).replace(/"/g, '""')}"`)
+          .join(',')
+      )
+      .join('\n');
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = `payments-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
+    window.URL.revokeObjectURL(url);
   };
 
-  const printReceipt = (booking: Booking) => {
+  const printReceipt = (payment: Payment) => {
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
 
     printWindow.document.write(`
       <html>
         <head>
-          <title>Payment Receipt - ${booking.customerName}</title>
+          <title>Payment Receipt - ${payment.customerName}</title>
           <style>
             body { font-family: Arial, sans-serif; padding: 40px; }
-            .receipt { max-width: 400px; margin: 0 auto; }
+            .receipt { max-width: 500px; margin: 0 auto; }
             .header { text-align: center; margin-bottom: 30px; }
             .logo { font-size: 24px; font-weight: bold; color: #e11d48; }
             .details { border-top: 2px dashed #ccc; border-bottom: 2px dashed #ccc; padding: 20px 0; }
-            .row { display: flex; justify-content: space-between; margin-bottom: 10px; }
+            .row { display: flex; justify-content: space-between; margin-bottom: 12px; gap: 20px; }
+            .row span:last-child { text-align: right; }
             .total { font-size: 20px; font-weight: bold; color: #e11d48; margin-top: 20px; }
             .footer { text-align: center; margin-top: 30px; color: #666; }
           </style>
@@ -112,46 +149,104 @@ export default function ManagePaymentsPage() {
         <body>
           <div class="receipt">
             <div class="header">
-              <div class="logo">LUME Salon</div>
+              <div class="logo">Salon Payment</div>
               <p>Payment Receipt</p>
             </div>
             <div class="details">
-              <div class="row"><span>Receipt #:</span> <span>RCP-${booking._id.slice(-6)}</span></div>
-              <div class="row"><span>Date:</span> <span>${new Date().toLocaleDateString()}</span></div>
-              <div class="row"><span>Customer:</span> <span>${booking.customerName}</span></div>
-              <div class="row"><span>Phone:</span> <span>${booking.customerPhone}</span></div>
-              <div class="row"><span>Service:</span> <span>${booking.serviceName}</span></div>
-              <div class="row"><span>Queue:</span> <span>#${booking.queueNumber} (${booking.queueDate})</span></div>
-              <div class="row total"><span>Amount Paid:</span> <span>$${booking.servicePrice.toFixed(2)}</span></div>
-              <div class="row"><span>Payment Status:</span> <span>${booking.paymentStatus}</span></div>
+              <div class="row"><span>Payment ID:</span> <span>${payment.paymentId}</span></div>
+              <div class="row"><span>Booking ID:</span> <span>${payment.bookingId}</span></div>
+              <div class="row"><span>Date:</span> <span>${new Date(payment.createdAt).toLocaleString()}</span></div>
+              <div class="row"><span>Customer:</span> <span>${payment.customerName}</span></div>
+              <div class="row"><span>Email:</span> <span>${payment.customerEmail || 'N/A'}</span></div>
+              <div class="row"><span>Status:</span> <span>${payment.status}</span></div>
+              <div class="row"><span>Currency:</span> <span>${payment.currency}</span></div>
+              <div class="row total"><span>Amount:</span> <span>${Number(payment.amount).toFixed(2)}</span></div>
+              <div class="row"><span>Transaction ID:</span> <span>${payment.transactionId || 'N/A'}</span></div>
             </div>
             <div class="footer">
-              <p>Thank you for choosing LUME Salon!</p>
-              <p>${new Date().toLocaleString()}</p>
+              <p>Generated on ${new Date().toLocaleString()}</p>
             </div>
           </div>
         </body>
       </html>
     `);
+
     printWindow.document.close();
     printWindow.print();
   };
 
+  const handleSave = async () => {
+    if (!selectedPayment) return;
+
+    if (!editForm.customerName.trim()) {
+      toast.error('Customer name is required');
+      return;
+    }
+
+    if (!editForm.customerEmail.trim()) {
+      toast.error('Customer email is required');
+      return;
+    }
+
+    if (!editForm.amount || Number(editForm.amount) <= 0) {
+      toast.error('Amount must be greater than 0');
+      return;
+    }
+
+    const result = await updatePayment(selectedPayment.paymentId, {
+      customerName: editForm.customerName.trim(),
+      customerEmail: editForm.customerEmail.trim(),
+      amount: Number(editForm.amount),
+      currency: editForm.currency.trim() || 'USD',
+      status: editForm.status,
+    });
+
+    if (result) {
+      setIsEditing(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteModal.payment) return;
+
+    const success = await deletePayment(deleteModal.payment.paymentId);
+
+    if (success) {
+      setDeleteModal({ show: false, payment: null });
+      setShowDetails(false);
+    }
+  };
+
+  const statusBadgeClass = (status: string) => {
+    const map: Record<string, string> = {
+      COMPLETED:
+        'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+      PROCESSING:
+        'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+      PENDING:
+        'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
+      FAILED:
+        'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+      REFUNDED:
+        'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400',
+    };
+
+    return map[status] || 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400';
+  };
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-2xl font-bold bg-gradient-to-r from-rose-600 to-amber-600 bg-clip-text text-transparent">
             Payment Management
           </h1>
           <p className="text-sm text-rose-600 dark:text-rose-400 mt-1">
-            Manage and process customer payments
+            Manage all payment records from payment service only
           </p>
         </div>
 
         <div className="flex items-center gap-3">
-          {/* View Toggle */}
           <div className="flex bg-rose-100 dark:bg-rose-900/50 rounded-xl p-1">
             <button
               onClick={() => setViewMode('grid')}
@@ -175,7 +270,6 @@ export default function ManagePaymentsPage() {
             </button>
           </div>
 
-          {/* Export Button */}
           <button
             onClick={exportToCSV}
             className="p-2 rounded-xl bg-rose-100 dark:bg-rose-900/50 text-rose-700 dark:text-rose-300 hover:bg-rose-200 dark:hover:bg-rose-800/50 transition-colors"
@@ -183,7 +277,6 @@ export default function ManagePaymentsPage() {
             <Download className="w-5 h-5" />
           </button>
 
-          {/* Refresh Button */}
           <button
             onClick={refreshData}
             className="p-2 rounded-xl bg-rose-100 dark:bg-rose-900/50 text-rose-700 dark:text-rose-300 hover:bg-rose-200 dark:hover:bg-rose-800/50 transition-colors"
@@ -193,18 +286,15 @@ export default function ManagePaymentsPage() {
         </div>
       </div>
 
-      {/* Stats */}
       <PaymentStatsDisplay stats={stats} loading={loading} />
 
-      {/* Filters */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-4 flex-wrap">
         <PaymentFiltersComponent filters={filters} onFilterChange={setFilters} />
         <div className="text-sm text-rose-600 dark:text-rose-400">
-          Showing {filteredBookings.length} of {bookings.length} bookings
+          Showing {filteredPayments.length} of {payments.length} payments
         </div>
       </div>
 
-      {/* Bookings Grid/List */}
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -214,7 +304,7 @@ export default function ManagePaymentsPage() {
             />
           ))}
         </div>
-      ) : filteredBookings.length === 0 ? (
+      ) : filteredPayments.length === 0 ? (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -225,31 +315,34 @@ export default function ManagePaymentsPage() {
             No Payments Found
           </h3>
           <p className="text-rose-600 dark:text-rose-400">
-            {filters.status ? 'Try adjusting your filters' : 'No bookings available yet'}
+            Try adjusting your filters
           </p>
         </motion.div>
       ) : (
-        <div className={viewMode === 'grid' 
-          ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-          : "space-y-4"
-        }>
-          {filteredBookings.map((booking) => (
+        <div
+          className={
+            viewMode === 'grid'
+              ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
+              : 'space-y-4'
+          }
+        >
+          {filteredPayments.map((payment) => (
             <PaymentCard
-              key={booking._id}
-              booking={booking}
-              isSelected={selectedBooking?._id === booking._id}
-              onSelect={(b) => {
-                setSelectedBooking(b);
+              key={payment.paymentId}
+              payment={payment}
+              isSelected={selectedPayment?.paymentId === payment.paymentId}
+              onSelect={(p) => {
+                setSelectedPayment(p);
                 setShowDetails(true);
+                setIsEditing(false);
               }}
             />
           ))}
         </div>
       )}
 
-      {/* Selected Booking Details Modal */}
       <AnimatePresence>
-        {showDetails && selectedBooking && (
+        {showDetails && selectedPayment && (
           <>
             <motion.div
               initial={{ opacity: 0 }}
@@ -266,8 +359,7 @@ export default function ManagePaymentsPage() {
               className="fixed inset-4 md:inset-10 lg:inset-20 bg-white dark:bg-gray-900 rounded-3xl shadow-2xl z-50 overflow-hidden"
             >
               <div className="h-full flex flex-col">
-                {/* Modal Header */}
-                <div className="p-6 border-b border-rose-100 dark:border-rose-800/30 flex items-center justify-between">
+                <div className="p-6 border-b border-rose-100 dark:border-rose-800/30 flex items-center justify-between gap-4">
                   <div className="flex items-center gap-4">
                     <button
                       onClick={() => setShowDetails(false)}
@@ -275,192 +367,286 @@ export default function ManagePaymentsPage() {
                     >
                       <ArrowLeft className="w-5 h-5" />
                     </button>
+
                     <div>
                       <h2 className="text-xl font-semibold text-rose-900 dark:text-rose-100">
                         Payment Details
                       </h2>
                       <p className="text-sm text-rose-600 dark:text-rose-400">
-                        Booking #{selectedBooking.queueNumber}
+                        Payment ID: {selectedPayment.paymentId}
                       </p>
                     </div>
                   </div>
+
                   <div className="flex items-center gap-3">
                     <button
-                      onClick={() => printReceipt(selectedBooking)}
-                      className="p-2 rounded-xl bg-rose-100 dark:bg-rose-900/50 text-rose-700 dark:text-rose-300 hover:bg-rose-200 dark:hover:bg-rose-800/50 transition-colors"
+                      onClick={() => printReceipt(selectedPayment)}
+                      className="px-4 py-2 rounded-xl bg-rose-100 dark:bg-rose-900/50 text-rose-700 dark:text-rose-300 hover:bg-rose-200 dark:hover:bg-rose-800/50 transition-colors"
                     >
-                      <Printer className="w-5 h-5" />
+                      Print
+                    </button>
+
+                    {!isEditing ? (
+                      <button
+                        onClick={() => setIsEditing(true)}
+                        className="px-4 py-2 rounded-xl bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800/40 transition-colors flex items-center gap-2"
+                      >
+                        <Pencil className="w-4 h-4" />
+                        Edit
+                      </button>
+                    ) : (
+                      <button
+                        onClick={handleSave}
+                        disabled={processing}
+                        className="px-4 py-2 rounded-xl bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-800/40 transition-colors flex items-center gap-2 disabled:opacity-50"
+                      >
+                        <Save className="w-4 h-4" />
+                        Save
+                      </button>
+                    )}
+
+                    <button
+                      onClick={() =>
+                        setDeleteModal({ show: true, payment: selectedPayment })
+                      }
+                      className="px-4 py-2 rounded-xl bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-800/40 transition-colors flex items-center gap-2"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Delete
                     </button>
                   </div>
                 </div>
 
-                {/* Modal Content */}
                 <div className="flex-1 overflow-y-auto p-6">
-                  <div className="max-w-3xl mx-auto space-y-6">
-                    {/* Customer Info */}
+                  <div className="max-w-4xl mx-auto space-y-6">
                     <div className="bg-gradient-to-br from-rose-50 to-amber-50 dark:from-rose-950/30 dark:to-amber-950/30 rounded-2xl p-6">
                       <h3 className="text-lg font-semibold text-rose-900 dark:text-rose-100 mb-4">
-                        Customer Information
+                        Basic Information
                       </h3>
+
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="flex items-center gap-3">
-                          <User className="w-5 h-5 text-rose-500" />
-                          <div>
-                            <p className="text-sm text-rose-600 dark:text-rose-400">Name</p>
-                            <p className="font-medium text-rose-900 dark:text-rose-100">
-                              {selectedBooking.customerName}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <Phone className="w-5 h-5 text-rose-500" />
-                          <div>
-                            <p className="text-sm text-rose-600 dark:text-rose-400">Phone</p>
-                            <p className="font-medium text-rose-900 dark:text-rose-100">
-                              {selectedBooking.customerPhone}
-                            </p>
-                          </div>
-                        </div>
-                        {selectedBooking.customerEmail && (
-                          <div className="flex items-center gap-3 md:col-span-2">
-                            <Mail className="w-5 h-5 text-rose-500" />
-                            <div>
-                              <p className="text-sm text-rose-600 dark:text-rose-400">Email</p>
+                        <div className="flex items-start gap-3">
+                          <User className="w-5 h-5 text-rose-500 mt-1" />
+                          <div className="w-full">
+                            <p className="text-sm text-rose-600 dark:text-rose-400">Customer Name</p>
+                            {isEditing ? (
+                              <input
+                                value={editForm.customerName}
+                                onChange={(e) =>
+                                  setEditForm((prev) => ({
+                                    ...prev,
+                                    customerName: e.target.value,
+                                  }))
+                                }
+                                className="mt-1 w-full px-4 py-2 rounded-xl border border-rose-200 dark:border-rose-800 bg-white dark:bg-gray-800 text-rose-900 dark:text-rose-100"
+                              />
+                            ) : (
                               <p className="font-medium text-rose-900 dark:text-rose-100">
-                                {selectedBooking.customerEmail}
+                                {selectedPayment.customerName}
                               </p>
-                            </div>
+                            )}
                           </div>
-                        )}
+                        </div>
+
+                        <div className="flex items-start gap-3">
+                          <Mail className="w-5 h-5 text-rose-500 mt-1" />
+                          <div className="w-full">
+                            <p className="text-sm text-rose-600 dark:text-rose-400">Customer Email</p>
+                            {isEditing ? (
+                              <input
+                                value={editForm.customerEmail}
+                                onChange={(e) =>
+                                  setEditForm((prev) => ({
+                                    ...prev,
+                                    customerEmail: e.target.value,
+                                  }))
+                                }
+                                className="mt-1 w-full px-4 py-2 rounded-xl border border-rose-200 dark:border-rose-800 bg-white dark:bg-gray-800 text-rose-900 dark:text-rose-100"
+                              />
+                            ) : (
+                              <p className="font-medium text-rose-900 dark:text-rose-100">
+                                {selectedPayment.customerEmail}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-3">
+                          <DollarSign className="w-5 h-5 text-rose-500 mt-1" />
+                          <div className="w-full">
+                            <p className="text-sm text-rose-600 dark:text-rose-400">Amount</p>
+                            {isEditing ? (
+                              <input
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                value={editForm.amount}
+                                onChange={(e) =>
+                                  setEditForm((prev) => ({
+                                    ...prev,
+                                    amount: e.target.value,
+                                  }))
+                                }
+                                className="mt-1 w-full px-4 py-2 rounded-xl border border-rose-200 dark:border-rose-800 bg-white dark:bg-gray-800 text-rose-900 dark:text-rose-100"
+                              />
+                            ) : (
+                              <p className="font-bold text-2xl text-rose-900 dark:text-rose-100">
+                                ${Number(selectedPayment.amount).toFixed(2)}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-3">
+                          <CreditCard className="w-5 h-5 text-rose-500 mt-1" />
+                          <div className="w-full">
+                            <p className="text-sm text-rose-600 dark:text-rose-400">Currency</p>
+                            {isEditing ? (
+                              <input
+                                value={editForm.currency}
+                                onChange={(e) =>
+                                  setEditForm((prev) => ({
+                                    ...prev,
+                                    currency: e.target.value.toUpperCase(),
+                                  }))
+                                }
+                                className="mt-1 w-full px-4 py-2 rounded-xl border border-rose-200 dark:border-rose-800 bg-white dark:bg-gray-800 text-rose-900 dark:text-rose-100"
+                              />
+                            ) : (
+                              <p className="font-medium text-rose-900 dark:text-rose-100">
+                                {selectedPayment.currency}
+                              </p>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     </div>
 
-                    {/* Service Details */}
                     <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-rose-100 dark:border-rose-800/30">
                       <h3 className="text-lg font-semibold text-rose-900 dark:text-rose-100 mb-4">
-                        Service Details
+                        Payment Metadata
                       </h3>
+
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <p className="text-sm text-rose-600 dark:text-rose-400">Service</p>
+                          <p className="text-sm text-rose-600 dark:text-rose-400">Booking ID</p>
                           <p className="font-medium text-rose-900 dark:text-rose-100">
-                            {selectedBooking.serviceName}
+                            {selectedPayment.bookingId}
                           </p>
                         </div>
-                        <div>
-                          <p className="text-sm text-rose-600 dark:text-rose-400">Category</p>
-                          <p className="font-medium text-rose-900 dark:text-rose-100">
-                            {selectedBooking.serviceCategory}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-rose-600 dark:text-rose-400">Duration</p>
-                          <p className="font-medium text-rose-900 dark:text-rose-100">
-                            {selectedBooking.serviceDuration} minutes
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-rose-600 dark:text-rose-400">Price</p>
-                          <p className="text-2xl font-bold bg-gradient-to-r from-rose-600 to-amber-600 bg-clip-text text-transparent">
-                            ${selectedBooking.servicePrice.toFixed(2)}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
 
-                    {/* Appointment & Queue */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-rose-100 dark:border-rose-800/30">
-                        <Calendar className="w-5 h-5 text-rose-500 mb-3" />
-                        <p className="text-sm text-rose-600 dark:text-rose-400 mb-1">Appointment Date</p>
-                        <p className="text-lg font-semibold text-rose-900 dark:text-rose-100">
-                          {new Date(selectedBooking.appointmentDate).toLocaleDateString('en-US', {
-                            weekday: 'long',
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric',
-                          })}
-                        </p>
-                      </div>
-                      <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-rose-100 dark:border-rose-800/30">
-                        <Clock className="w-5 h-5 text-rose-500 mb-3" />
-                        <p className="text-sm text-rose-600 dark:text-rose-400 mb-1">Queue Information</p>
-                        <p className="text-lg font-semibold text-rose-900 dark:text-rose-100">
-                          #{selectedBooking.queueNumber} - {selectedBooking.queueDate}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Payment Status */}
-                    <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-rose-100 dark:border-rose-800/30">
-                      <h3 className="text-lg font-semibold text-rose-900 dark:text-rose-100 mb-4">
-                        Payment Status
-                      </h3>
-                      <div className="flex items-center justify-between">
                         <div>
-                          <span className={`px-4 py-2 text-sm font-medium rounded-full ${
-                            selectedBooking.paymentStatus === 'COMPLETED'
-                              ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                              : selectedBooking.paymentStatus === 'PENDING'
-                              ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
-                              : selectedBooking.paymentStatus === 'Failed'
-                              ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
-                              : 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400'
-                          }`}>
-                            {selectedBooking.paymentStatus}
-                          </span>
-                        </div>
-                        <div className="flex gap-3">
-                          {selectedBooking.paymentStatus === 'PENDING' && (
-                            <button
-                              onClick={() => processPayment(selectedBooking)}
-                              disabled={processing}
-                              className="px-6 py-2 bg-gradient-to-r from-rose-500 to-amber-500 text-white rounded-xl text-sm font-medium hover:shadow-lg transition-all disabled:opacity-50"
+                          <p className="text-sm text-rose-600 dark:text-rose-400">Status</p>
+                          {isEditing ? (
+                            <select
+                              value={editForm.status}
+                              onChange={(e) =>
+                                setEditForm((prev) => ({
+                                  ...prev,
+                                  status: e.target.value as PaymentStatus,
+                                }))
+                              }
+                              className="mt-1 w-full px-4 py-2 rounded-xl border border-rose-200 dark:border-rose-800 bg-white dark:bg-gray-800 text-rose-900 dark:text-rose-100"
                             >
-                              {processing ? 'Processing...' : 'Process Payment'}
-                            </button>
-                          )}
-                          {selectedBooking.paymentStatus === 'COMPLETED' && (
-                            <button
-                              onClick={() => setRefundModal({ show: true, booking: selectedBooking })}
-                              className="px-6 py-2 border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 rounded-xl text-sm font-medium hover:bg-rose-50 dark:hover:bg-rose-900/30 transition-colors"
+                              <option value="PENDING">PENDING</option>
+                              <option value="PROCESSING">PROCESSING</option>
+                              <option value="COMPLETED">COMPLETED</option>
+                              <option value="FAILED">FAILED</option>
+                              <option value="REFUNDED">REFUNDED</option>
+                            </select>
+                          ) : (
+                            <span
+                              className={`inline-block mt-1 px-4 py-2 text-sm font-medium rounded-full ${statusBadgeClass(
+                                selectedPayment.status
+                              )}`}
                             >
-                              Refund
-                            </button>
+                              {selectedPayment.status}
+                            </span>
                           )}
                         </div>
+
+                        <div>
+                          <p className="text-sm text-rose-600 dark:text-rose-400">Transaction ID</p>
+                          <p className="font-medium text-rose-900 dark:text-rose-100 break-all">
+                            {selectedPayment.transactionId || 'N/A'}
+                          </p>
+                        </div>
+
+                        <div>
+                          <p className="text-sm text-rose-600 dark:text-rose-400">Checkout URL</p>
+                          {selectedPayment.checkoutUrl ? (
+                            <a
+                              href={selectedPayment.checkoutUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="font-medium text-blue-600 dark:text-blue-400 break-all underline"
+                            >
+                              Open checkout
+                            </a>
+                          ) : (
+                            <p className="font-medium text-rose-900 dark:text-rose-100">N/A</p>
+                          )}
+                        </div>
+
+                        <div>
+                          <p className="text-sm text-rose-600 dark:text-rose-400">Created At</p>
+                          <p className="font-medium text-rose-900 dark:text-rose-100">
+                            {new Date(selectedPayment.createdAt).toLocaleString()}
+                          </p>
+                        </div>
+
+                        <div>
+                          <p className="text-sm text-rose-600 dark:text-rose-400">Updated At</p>
+                          <p className="font-medium text-rose-900 dark:text-rose-100">
+                            {new Date(selectedPayment.updatedAt).toLocaleString()}
+                          </p>
+                        </div>
+
+                        <div>
+                          <p className="text-sm text-rose-600 dark:text-rose-400">Paid At</p>
+                          <p className="font-medium text-rose-900 dark:text-rose-100">
+                            {selectedPayment.paidAt
+                              ? new Date(selectedPayment.paidAt).toLocaleString()
+                              : 'N/A'}
+                          </p>
+                        </div>
+
+                        <div>
+                          <p className="text-sm text-rose-600 dark:text-rose-400">Order ID</p>
+                          <p className="font-medium text-rose-900 dark:text-rose-100 break-all">
+                            {selectedPayment.lemonSqueezyOrderId || 'N/A'}
+                          </p>
+                        </div>
                       </div>
                     </div>
 
-                    {/* Payment History */}
-                    {selectedBooking.paymentMethod && (
-                      <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-rose-100 dark:border-rose-800/30">
-                        <h3 className="text-lg font-semibold text-rose-900 dark:text-rose-100 mb-4">
-                          Payment History
-                        </h3>
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between p-3 bg-rose-50 dark:bg-rose-950/30 rounded-xl">
-                            <div className="flex items-center gap-3">
-                              <CreditCard className="w-5 h-5 text-rose-500" />
-                              <div>
-                                <p className="font-medium text-rose-900 dark:text-rose-100">
-                                  {selectedBooking.paymentMethod}
-                                </p>
-                                <p className="text-xs text-rose-600 dark:text-rose-400">
-                                  {selectedBooking.paymentDate ? new Date(selectedBooking.paymentDate).toLocaleString() : 'Date not available'}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <p className="font-bold text-rose-900 dark:text-rose-100">
-                                ${selectedBooking.servicePrice.toFixed(2)}
-                              </p>
-                              <p className="text-xs text-green-600 dark:text-green-400">
-                                {selectedBooking.paymentId ? 'Transaction ID: ' + selectedBooking.paymentId.slice(-8) : ''}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
+                    {isEditing && (
+                      <div className="flex justify-end gap-3">
+                        <button
+                          onClick={() => {
+                            setIsEditing(false);
+                            setEditForm({
+                              customerName: selectedPayment.customerName || '',
+                              customerEmail: selectedPayment.customerEmail || '',
+                              amount: String(selectedPayment.amount ?? ''),
+                              currency: selectedPayment.currency || 'USD',
+                              status: selectedPayment.status,
+                            });
+                          }}
+                          className="px-5 py-2 rounded-xl border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors flex items-center gap-2"
+                        >
+                          <XCircle className="w-4 h-4" />
+                          Cancel
+                        </button>
+
+                        <button
+                          onClick={handleSave}
+                          disabled={processing}
+                          className="px-5 py-2 rounded-xl bg-gradient-to-r from-rose-500 to-amber-500 text-white hover:shadow-lg transition-all disabled:opacity-50 flex items-center gap-2"
+                        >
+                          <Save className="w-4 h-4" />
+                          {processing ? 'Saving...' : 'Save Changes'}
+                        </button>
                       </div>
                     )}
                   </div>
@@ -471,15 +657,14 @@ export default function ManagePaymentsPage() {
         )}
       </AnimatePresence>
 
-      {/* Refund Modal */}
       <AnimatePresence>
-        {refundModal.show && refundModal.booking && (
+        {deleteModal.show && deleteModal.payment && (
           <>
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => setRefundModal({ show: false, booking: null })}
+              onClick={() => setDeleteModal({ show: false, payment: null })}
               className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60]"
             />
 
@@ -490,20 +675,25 @@ export default function ManagePaymentsPage() {
               className="fixed inset-0 m-auto w-[90%] max-w-md h-fit bg-white dark:bg-gray-900 rounded-2xl shadow-2xl z-[70] p-6"
             >
               <h3 className="text-xl font-semibold text-rose-900 dark:text-rose-100 mb-4">
-                Process Refund
+                Delete Payment
               </h3>
+
               <p className="text-rose-600 dark:text-rose-400 mb-6">
-                Are you sure you want to refund ${refundModal.booking.servicePrice.toFixed(2)} for {refundModal.booking.customerName}?
+                Are you sure you want to delete payment for{' '}
+                <span className="font-semibold">{deleteModal.payment.customerName}</span>?
               </p>
+
               <div className="flex gap-3">
                 <button
-                  onClick={() => handleRefund(refundModal.booking!)}
-                  className="flex-1 px-4 py-2 bg-gradient-to-r from-rose-500 to-amber-500 text-white rounded-xl text-sm font-medium hover:shadow-lg transition-all"
+                  onClick={handleDelete}
+                  disabled={processing}
+                  className="flex-1 px-4 py-2 bg-red-500 text-white rounded-xl text-sm font-medium hover:shadow-lg transition-all disabled:opacity-50"
                 >
-                  Confirm Refund
+                  {processing ? 'Deleting...' : 'Confirm Delete'}
                 </button>
+
                 <button
-                  onClick={() => setRefundModal({ show: false, booking: null })}
+                  onClick={() => setDeleteModal({ show: false, payment: null })}
                   className="flex-1 px-4 py-2 border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 rounded-xl text-sm font-medium hover:bg-rose-50 dark:hover:bg-rose-900/30 transition-colors"
                 >
                   Cancel

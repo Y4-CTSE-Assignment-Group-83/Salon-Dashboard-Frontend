@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Filter, X, Search, Calendar, DollarSign } from 'lucide-react';
+import { Filter, X, Search, Calendar } from 'lucide-react';
 import { PaymentFilters } from '@/app/types/payment';
 
 interface PaymentFiltersProps {
@@ -10,16 +10,19 @@ interface PaymentFiltersProps {
   onFilterChange: (filters: PaymentFilters) => void;
 }
 
-export const PaymentFiltersComponent = ({ filters, onFilterChange }: PaymentFiltersProps) => {
+export const PaymentFiltersComponent = ({
+  filters,
+  onFilterChange,
+}: PaymentFiltersProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const statusOptions = [
     { value: 'all', label: 'All Payments' },
     { value: 'PENDING', label: 'Pending' },
-    { value: 'Processing', label: 'Processing' },
-    { value: 'Completed', label: 'Completed' },
-    { value: 'Failed', label: 'Failed' },
-    { value: 'Refunded', label: 'Refunded' },
+    { value: 'PROCESSING', label: 'Processing' },
+    { value: 'COMPLETED', label: 'Completed' },
+    { value: 'FAILED', label: 'Failed' },
+    { value: 'REFUNDED', label: 'Refunded' },
   ];
 
   const handleStatusChange = (status: string) => {
@@ -63,22 +66,18 @@ export const PaymentFiltersComponent = ({ filters, onFilterChange }: PaymentFilt
         </motion.button>
 
         {hasFilters && (
-          <motion.button
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
+          <button
             onClick={clearFilters}
             className="p-2 rounded-lg hover:bg-rose-100 dark:hover:bg-rose-900/30 text-rose-600 dark:text-rose-400 transition-colors"
           >
             <X className="w-4 h-4" />
-          </motion.button>
+          </button>
         )}
       </div>
 
       <AnimatePresence>
         {isOpen && (
           <>
-            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -87,7 +86,6 @@ export const PaymentFiltersComponent = ({ filters, onFilterChange }: PaymentFilt
               className="fixed inset-0 z-40 lg:hidden"
             />
 
-            {/* Filter Panel */}
             <motion.div
               initial={{ opacity: 0, y: -20, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -100,7 +98,6 @@ export const PaymentFiltersComponent = ({ filters, onFilterChange }: PaymentFilt
                   Filter Payments
                 </h3>
 
-                {/* Search */}
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-rose-700 dark:text-rose-300 mb-2">
                     Search Customer
@@ -117,7 +114,6 @@ export const PaymentFiltersComponent = ({ filters, onFilterChange }: PaymentFilt
                   </div>
                 </div>
 
-                {/* Status Filter */}
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-rose-700 dark:text-rose-300 mb-2">
                     Payment Status
@@ -144,7 +140,6 @@ export const PaymentFiltersComponent = ({ filters, onFilterChange }: PaymentFilt
                   </div>
                 </div>
 
-                {/* Date Range */}
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-rose-700 dark:text-rose-300 mb-2">
                     Date Range
@@ -159,6 +154,7 @@ export const PaymentFiltersComponent = ({ filters, onFilterChange }: PaymentFilt
                         className="w-full pl-10 pr-4 py-2 bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800 rounded-xl text-sm text-rose-900 dark:text-rose-100 focus:outline-none focus:ring-2 focus:ring-rose-500"
                       />
                     </div>
+
                     <div className="relative">
                       <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-rose-400" />
                       <input
@@ -171,7 +167,6 @@ export const PaymentFiltersComponent = ({ filters, onFilterChange }: PaymentFilt
                   </div>
                 </div>
 
-                {/* Actions */}
                 <div className="flex gap-3 mt-6">
                   <button
                     onClick={() => setIsOpen(false)}
@@ -179,6 +174,7 @@ export const PaymentFiltersComponent = ({ filters, onFilterChange }: PaymentFilt
                   >
                     Apply
                   </button>
+
                   <button
                     onClick={clearFilters}
                     className="px-4 py-2 border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 rounded-xl text-sm font-medium hover:bg-rose-50 dark:hover:bg-rose-900/30 transition-colors"

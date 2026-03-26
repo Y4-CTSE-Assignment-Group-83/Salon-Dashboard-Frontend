@@ -2,14 +2,13 @@
 
 import { PaymentStats } from '@/app/types/payment';
 import { motion } from 'framer-motion';
-import { 
-  DollarSign, 
-  CreditCard, 
-  Clock, 
-  CheckCircle, 
-  TrendingUp, 
+import {
+  DollarSign,
+  Clock,
+  CheckCircle,
+  TrendingUp,
   Calendar,
-  RefreshCw 
+  RefreshCw,
 } from 'lucide-react';
 
 interface PaymentStatsProps {
@@ -44,7 +43,7 @@ export const PaymentStatsDisplay = ({ stats, loading }: PaymentStatsProps) => {
       text: 'text-yellow-600 dark:text-yellow-400',
     },
     {
-      title: 'Today\'s Revenue',
+      title: "Today's Revenue",
       value: `$${stats.todayRevenue.toFixed(2)}`,
       icon: Calendar,
       gradient: 'from-purple-500 to-pink-600',
@@ -89,7 +88,7 @@ export const PaymentStatsDisplay = ({ stats, loading }: PaymentStatsProps) => {
           key={card.title}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: index * 0.1 }}
+          transition={{ delay: index * 0.08 }}
           className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-2xl p-6 border border-rose-100 dark:border-rose-800/30 hover:shadow-lg transition-shadow"
         >
           <div className="flex items-center justify-between">
@@ -105,7 +104,9 @@ export const PaymentStatsDisplay = ({ stats, loading }: PaymentStatsProps) => {
               <card.icon className={`w-6 h-6 ${card.text}`} />
             </div>
           </div>
-          <div className={`mt-4 h-1 w-full rounded-full bg-gradient-to-r ${card.gradient} opacity-50`} />
+          <div
+            className={`mt-4 h-1 w-full rounded-full bg-gradient-to-r ${card.gradient} opacity-50`}
+          />
         </motion.div>
       ))}
     </div>
