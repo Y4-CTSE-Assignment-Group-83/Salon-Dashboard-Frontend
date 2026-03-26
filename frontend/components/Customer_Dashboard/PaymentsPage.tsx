@@ -263,7 +263,7 @@ export default function CustomerPaymentsPage() {
         margin: { left: 20, right: 20 },
       });
       
-      startY = (doc as any).lastAutoTable.finalY + 10;
+      startY = (doc.lastAutoTable?.finalY ?? startY) + 10;
     }
     
     // Payment details table
@@ -302,8 +302,7 @@ export default function CustomerPaymentsPage() {
       margin: { left: 20, right: 20 },
     });
     
-    const finalY = (doc as any).lastAutoTable.finalY + 15;
-    
+    const finalY = (doc.lastAutoTable?.finalY ?? startY) + 15;    
     // Footer
     doc.setFontSize(9);
     doc.setTextColor(156, 163, 175);
@@ -331,13 +330,10 @@ export default function CustomerPaymentsPage() {
   };
 
   const handleDownloadReceipt = async (payment: Payment) => {
-    let booking: Booking | null = null;
-    // if (payment.bookingId) {
-    //   booking = await fetchBookingForPayment(payment.bookingId);
-    // }
-    generatePDFReceipt(payment, booking || undefined);
-    toast.success('Receipt downloaded successfully!');
-  };
+  const booking: Booking | null = null;
+  generatePDFReceipt(payment, booking || undefined);
+  toast.success('Receipt downloaded successfully!');
+};
 
   if (loading) {
     return (
