@@ -81,7 +81,7 @@ const getErrorMessage = (error: unknown): string => {
     );
 
     const pendingBookings = bookings.filter(
-      (booking) => booking.paymentStatus === 'Pending'
+      (booking) => booking.paymentStatus === 'PENDING'
     );
 
     const todayRevenue = paidBookings
