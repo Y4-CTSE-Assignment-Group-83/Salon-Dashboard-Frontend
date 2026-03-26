@@ -70,17 +70,17 @@ export default function ManagePaymentsPage() {
     status: 'PENDING',
   });
 
-  useEffect(() => {
-    if (selectedPayment) {
-      setEditForm({
-        customerName: selectedPayment.customerName || '',
-        customerEmail: selectedPayment.customerEmail || '',
-        amount: String(selectedPayment.amount ?? ''),
-        currency: selectedPayment.currency || 'USD',
-        status: selectedPayment.status,
-      });
-    }
-  }, [selectedPayment]);
+  // useEffect(() => {
+  //   if (selectedPayment) {
+  //     setEditForm({
+  //       customerName: selectedPayment.customerName || '',
+  //       customerEmail: selectedPayment.customerEmail || '',
+  //       amount: String(selectedPayment.amount ?? ''),
+  //       currency: selectedPayment.currency || 'USD',
+  //       status: selectedPayment.status,
+  //     });
+  //   }
+  // }, [selectedPayment]);
 
   const exportToCSV = () => {
     const headers = [
@@ -332,10 +332,18 @@ export default function ManagePaymentsPage() {
               payment={payment}
               isSelected={selectedPayment?.paymentId === payment.paymentId}
               onSelect={(p) => {
-                setSelectedPayment(p);
-                setShowDetails(true);
-                setIsEditing(false);
-              }}
+  setSelectedPayment(p);
+  setShowDetails(true);
+  setIsEditing(false);
+
+  setEditForm({
+    customerName: p.customerName || '',
+    customerEmail: p.customerEmail || '',
+    amount: String(p.amount ?? ''),
+    currency: p.currency || 'USD',
+    status: p.status,
+  });
+}}
             />
           ))}
         </div>
