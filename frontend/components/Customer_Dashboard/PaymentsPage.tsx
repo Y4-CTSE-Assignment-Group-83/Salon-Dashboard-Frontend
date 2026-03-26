@@ -8,8 +8,6 @@ import {
   Calendar, 
   Clock, 
   CheckCircle,
-  XCircle,
-  AlertCircle,
   Download,
   ArrowRight,
   History
@@ -24,7 +22,11 @@ import autoTable from 'jspdf-autotable';
 const API_URL = 'http://ctse-alb-320060941.eu-north-1.elb.amazonaws.com';
 const API_URL2 = 'http://ctse-alb-320060941.eu-north-1.elb.amazonaws.com';
 
-
+type JsPDFWithAutoTable = jsPDF & {
+  lastAutoTable?: {
+    finalY: number;
+  };
+};
 export default function CustomerPaymentsPage() {
   const { user } = useAuthContext();
   const [pendingBookings, setPendingBookings] = useState<Booking[]>([]);
@@ -35,10 +37,11 @@ export default function CustomerPaymentsPage() {
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
   const [filter, setFilter] = useState<'pending' | 'completed'>('pending');
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  // useEffect(() => {
+  //   fetchData();
+  // }, []);
 
+  useEffect(() => {
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -50,6 +53,9 @@ export default function CustomerPaymentsPage() {
       setLoading(false);
     }
   };
+
+  fetchData();
+}, []);
 
   const fetchPendingBookings = async () => {
     try {
@@ -132,18 +138,18 @@ export default function CustomerPaymentsPage() {
     return colors[status as keyof typeof colors] || 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400';
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'COMPLETED':
-        return <CheckCircle className="w-5 h-5 text-green-500" />;
-      case 'Failed':
-        return <XCircle className="w-5 h-5 text-red-500" />;
-      case 'PENDING':
-        return <AlertCircle className="w-5 h-5 text-yellow-500" />;
-      default:
-        return <Clock className="w-5 h-5 text-gray-500" />;
-    }
-  };
+  // const getStatusIcon = (status: string) => {
+  //   switch (status) {
+  //     case 'COMPLETED':
+  //       return <CheckCircle className="w-5 h-5 text-green-500" />;
+  //     case 'Failed':
+  //       return <XCircle className="w-5 h-5 text-red-500" />;
+  //     case 'PENDING':
+  //       return <AlertCircle className="w-5 h-5 text-yellow-500" />;
+  //     default:
+  //       return <Clock className="w-5 h-5 text-gray-500" />;
+  //   }
+  // };
 
   const totalSpent = completedPayments.reduce((sum, payment) => sum + payment.amount, 0);
   const pendingAmount = pendingBookings.reduce((sum, booking) => sum + booking.servicePrice, 0);
@@ -168,7 +174,7 @@ export default function CustomerPaymentsPage() {
   };
 
   const generatePDFReceipt = (payment: Payment, booking?: Booking) => {
-    const doc = new jsPDF();
+     const doc = new jsPDF() as JsPDFWithAutoTable;
     const pageWidth = doc.internal.pageSize.getWidth();
     
     // Add gradient-like effect with colors
@@ -432,7 +438,7 @@ export default function CustomerPaymentsPage() {
                 No Pending Payments
               </h3>
               <p className="text-rose-600 dark:text-rose-400">
-                You don't have any pending payments at the moment
+                You don&apos;t have any pending payments at the moment
               </p>
             </motion.div>
           ) : (
@@ -534,7 +540,7 @@ export default function CustomerPaymentsPage() {
                 No Completed Payments
               </h3>
               <p className="text-rose-600 dark:text-rose-400">
-                You haven't made any payments yet
+                You haven&apos;t made any payments yet
               </p>
             </motion.div>
           ) : (
