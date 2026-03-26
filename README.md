@@ -161,13 +161,13 @@ pnpm dev
 Build Docker image:
 
 ```bash
-docker build --build-arg NEXT_PUBLIC_API_BASE_URL=http://<ALB_URL>/api -t lume-frontend .
+docker build --build-arg NEXT_PUBLIC_API_BASE_URL=http://<ALB_URL>/api -t salon-frontend .
 ```
 
 Run container:
 
 ```bash
-docker run -p 3000:3000 lume-frontend
+docker run -p 3000:3000 salon-frontend
 ```
 
 ---
@@ -206,4 +206,4 @@ docker run -p 3000:3000 lume-frontend
 
 ## 📄 License
 
-This project is developed for academic and research purposes.
+This project is developed for academic purposes.
