@@ -15,7 +15,7 @@ export const PaymentFiltersComponent = ({ filters, onFilterChange }: PaymentFilt
 
   const statusOptions = [
     { value: 'all', label: 'All Payments' },
-    { value: 'Pending', label: 'Pending' },
+    { value: 'PENDING', label: 'Pending' },
     { value: 'Processing', label: 'Processing' },
     { value: 'Completed', label: 'Completed' },
     { value: 'Failed', label: 'Failed' },

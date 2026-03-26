@@ -401,7 +401,7 @@ export default function ManagePaymentsPage() {
                           <span className={`px-4 py-2 text-sm font-medium rounded-full ${
                             selectedBooking.paymentStatus === 'COMPLETED'
                               ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                              : selectedBooking.paymentStatus === 'Pending'
+                              : selectedBooking.paymentStatus === 'PENDING'
                               ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
                               : selectedBooking.paymentStatus === 'Failed'
                               ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
@@ -411,7 +411,7 @@ export default function ManagePaymentsPage() {
                           </span>
                         </div>
                         <div className="flex gap-3">
-                          {selectedBooking.paymentStatus === 'Pending' && (
+                          {selectedBooking.paymentStatus === 'PENDING' && (
                             <button
                               onClick={() => processPayment(selectedBooking)}
                               disabled={processing}
