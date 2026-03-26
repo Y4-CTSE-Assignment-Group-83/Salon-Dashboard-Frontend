@@ -1,3 +1,21 @@
+export interface Payment {
+  _id: string;
+  bookingId: string;
+  amount: number;
+  currency: string;
+  customerEmail: string;
+  customerName: string;
+  status: 'PENDING' | 'Processing' | 'COMPLETED' | 'Failed' | 'Refunded';
+  lemonSqueezyOrderId?: string;
+  lemonSqueezyVariantId?: string;
+  lemonSqueezyCheckoutRequestId?: string;
+  checkoutUrl?: string;
+  transactionId?: string;
+  paidAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Booking {
   _id: string;
   customerName: string;
@@ -10,25 +28,11 @@ export interface Booking {
   appointmentDate: string;
   queueDate: string;
   queueNumber: number;
-  status: 'Pending' | 'Confirmed' | 'COMPLETED' | 'Cancelled';
-  paymentStatus: 'Pending' | 'Processing' | 'COMPLETED' | 'Failed' | 'Refunded';
+  status: 'PENDING' | 'Confirmed' | 'COMPLETED' | 'Cancelled';
+  paymentStatus: 'PENDING' | 'Processing' | 'COMPLETED' | 'Failed' | 'Refunded';
   paymentId?: string;
   paymentMethod?: string;
   paymentDate?: string;
-}
-
-export interface Payment {
-  _id: string;
-  bookingId: string;
-  amount: number;
-  customerEmail: string;
-  customerName: string;
-  variantId: string;
-  checkoutUrl?: string;
-  paymentStatus: 'Pending' | 'Processing' | 'COMPLETED' | 'Failed' | 'Refunded';
-  lemonSqueezyOrderId?: string;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export interface PaymentStats {

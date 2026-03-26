@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - development
   workflow_dispatch:
 
 jobs:
@@ -32,7 +31,7 @@ jobs:
       - name: 🔑 Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
 
-      # 🧪 Debug (optional)
+      # 🧪 Debug AWS identity
       - name: 🧪 Verify AWS Identity
         run: aws sts get-caller-identity
 
@@ -42,13 +41,17 @@ jobs:
         with:
           context: ./frontend
           push: true
-          tags: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/salon-frontend:latest
+          tags: |
+            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/salon-frontend:latest
+            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/salon-frontend:${{ github.sha }}
+          build-args: |
+            NEXT_PUBLIC_API_BASE_URL=http://ctse-alb-320060941.eu-north-1.elb.amazonaws.com/api
 
       # 🚀 Deploy to ECS
       - name: 🚀 Deploy to ECS
         run: |
           aws ecs update-service \
             --cluster salon-frontend-cluster \
-            --service salon-frontend-service \
+            --service salon-frontend \
             --force-new-deployment \
             --region ${{ secrets.AWS_REGION }}

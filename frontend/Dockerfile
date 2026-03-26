@@ -6,6 +6,9 @@ WORKDIR /app
 # Install pnpm
 RUN npm install -g pnpm
 
+ARG NEXT_PUBLIC_API_BASE_URL
+ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
+
 # Copy dependency files
 COPY package.json pnpm-lock.yaml ./
 
