@@ -1,0 +1,57 @@
+name: CI/CD - Frontend (Next.js + ECR + ECS)
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 📥 Checkout
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
+
+      # 🐳 Docker setup
+      - name: 🐳 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # 🔐 AWS credentials
+      - name: 🔐 Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # 🔑 Login to ECR
+      - name: 🔑 Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # 🧪 Debug AWS identity
+      - name: 🧪 Verify AWS Identity
+        run: aws sts get-caller-identity
+
+      # 🏗 Build & Push Docker Image
+      - name: 🏗 Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          push: true
+          tags: |
+            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/salon-frontend:latest
+            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/salon-frontend:${{ github.sha }}
+          build-args: |
+            NEXT_PUBLIC_API_BASE_URL=http://ctse-alb-320060941.eu-north-1.elb.amazonaws.com/api
+
+      # 🚀 Deploy to ECS
+      - name: 🚀 Deploy to ECS
+        run: |
+          aws ecs update-service \
+            --cluster salon-frontend-cluster \
+            --service salon-frontend \
+            --force-new-deployment \
+            --region ${{ secrets.AWS_REGION }}

@@ -1,25 +1,7 @@
-// import axios, { AxiosInstance } from "axios";
-//
-// const api: AxiosInstance = axios.create({
-//     baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
-// });
-//
-// api.interceptors.request.use((config) => {
-//     const token = localStorage.getItem("token");
-//
-//     if (token) {
-//         config.headers.Authorization = `Bearer ${token}`;
-//     }
-//
-//     return config;
-// });
-//
-// export default api;
-
 import axios, { AxiosInstance } from "axios";
 
 const api: AxiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
+  baseURL: "http://ctse-alb-320060941.eu-north-1.elb.amazonaws.com/api",
   withCredentials: true, // ✅ Important: Send cookies with every request
   headers: {
     "Content-Type": "application/json",
