@@ -37,11 +37,13 @@ export default function AppointmentsPage() {
     }
   }, [user]);
 
-  const handleChange = (e: any) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!user) {
@@ -77,7 +79,6 @@ export default function AppointmentsPage() {
       alert("Booking Created ✅");
 
       router.push("/dashboards/customer?tab=my_appointments");
-
     } catch (error) {
       console.error(error);
       alert("Booking Failed ❌");
@@ -101,7 +102,6 @@ export default function AppointmentsPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-
         <input
           name="customerName"
           value={form.customerName}
