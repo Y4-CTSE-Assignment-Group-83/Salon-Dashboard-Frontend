@@ -17,7 +17,7 @@ interface Booking {
 }
 
 const API_URL =
-  "http://ctse-alb-320060941.eu-north-1.elb.amazonaws.com/bookings";
+  "http://ctse-alb-320060941.eu-north-1.elb.amazonaws.com/api/bookings";
 
 export default function MyAppointmentsPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
