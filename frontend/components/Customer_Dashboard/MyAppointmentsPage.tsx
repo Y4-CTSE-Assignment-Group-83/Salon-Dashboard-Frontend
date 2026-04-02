@@ -53,8 +53,27 @@ export default function MyAppointmentsPage() {
   }, [user]);
 
   useEffect(() => {
-    fetchBookings();
-  }, [fetchBookings]);
+    if (!user?.email) return;
+
+    const loadBookings = async () => {
+      try {
+        const res = await axios.get(API_URL);
+
+        const allBookings = res.data?.data || [];
+
+        const userBookings = allBookings.filter(
+          (b: Booking) => b.customerEmail === user.email,
+        );
+
+        setBookings(userBookings);
+      } catch (error) {
+        console.error("FETCH ERROR:", error);
+        setBookings([]);
+      }
+    };
+
+    loadBookings();
+  }, [user]);
 
   /* ===========================
      CANCEL BOOKING
