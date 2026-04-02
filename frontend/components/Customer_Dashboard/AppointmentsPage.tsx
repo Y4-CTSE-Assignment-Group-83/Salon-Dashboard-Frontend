@@ -74,7 +74,10 @@ export default function AppointmentsPage() {
 
       console.log("PAYLOAD:", payload);
 
-      await axios.post("http://localhost:4000/api/bookings", payload);
+      await axios.post(
+        "http://ctse-alb-320060941.eu-north-1.elb.amazonaws.com//bookings",
+        payload,
+      );
 
       alert("Booking Created ✅");
 

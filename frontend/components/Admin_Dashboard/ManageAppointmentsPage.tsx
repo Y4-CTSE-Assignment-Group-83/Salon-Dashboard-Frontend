@@ -16,7 +16,8 @@ interface Booking {
   customerEmail: string;
 }
 
-const API_URL = "http://localhost:4000/api/bookings";
+const API_URL =
+  "http://ctse-alb-320060941.eu-north-1.elb.amazonaws.com//bookings";
 
 export default function ManageAppointmentsPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -90,10 +91,7 @@ export default function ManageAppointmentsPage() {
     if (searchTime) {
       const [h, m] = searchTime.split(":").map(Number);
 
-      if (
-        bookingDate.getHours() !== h ||
-        bookingDate.getMinutes() !== m
-      ) {
+      if (bookingDate.getHours() !== h || bookingDate.getMinutes() !== m) {
         return false;
       }
     }
@@ -102,15 +100,11 @@ export default function ManageAppointmentsPage() {
   });
 
   const tabStyle = (tab: string) =>
-    `px-4 py-2 rounded ${
-      activeTab === tab ? "bg-blue-600" : "bg-gray-800"
-    }`;
+    `px-4 py-2 rounded ${activeTab === tab ? "bg-blue-600" : "bg-gray-800"}`;
 
   return (
     <div className="p-6 text-white">
-      <h1 className="text-3xl font-bold mb-6">
-        Manage Appointments
-      </h1>
+      <h1 className="text-3xl font-bold mb-6">Manage Appointments</h1>
 
       {/* 🔥 TABS */}
       <div className="flex flex-wrap gap-3 mb-6">
@@ -118,19 +112,31 @@ export default function ManageAppointmentsPage() {
           All
         </button>
 
-        <button onClick={() => setActiveTab("pending")} className={tabStyle("pending")}>
+        <button
+          onClick={() => setActiveTab("pending")}
+          className={tabStyle("pending")}
+        >
           Pending
         </button>
 
-        <button onClick={() => setActiveTab("confirmed")} className={tabStyle("confirmed")}>
+        <button
+          onClick={() => setActiveTab("confirmed")}
+          className={tabStyle("confirmed")}
+        >
           Confirmed
         </button>
 
-        <button onClick={() => setActiveTab("completed")} className={tabStyle("completed")}>
+        <button
+          onClick={() => setActiveTab("completed")}
+          className={tabStyle("completed")}
+        >
           Completed
         </button>
 
-        <button onClick={() => setActiveTab("canceled")} className={tabStyle("canceled")}>
+        <button
+          onClick={() => setActiveTab("canceled")}
+          className={tabStyle("canceled")}
+        >
           Canceled
         </button>
       </div>
@@ -178,16 +184,10 @@ export default function ManageAppointmentsPage() {
           >
             {/* LEFT */}
             <div>
-              <h2 className="text-lg font-semibold">
-                {booking.serviceName}
-              </h2>
-              <p className="text-gray-400 text-sm">
-                {booking.serviceCategory}
-              </p>
+              <h2 className="text-lg font-semibold">{booking.serviceName}</h2>
+              <p className="text-gray-400 text-sm">{booking.serviceCategory}</p>
               <p className="text-xs text-gray-400">
-                {new Date(
-                  booking.appointmentDate
-                ).toLocaleString()}
+                {new Date(booking.appointmentDate).toLocaleString()}
               </p>
 
               <p className="text-xs text-gray-500 mt-1">
@@ -213,10 +213,10 @@ export default function ManageAppointmentsPage() {
                   booking.status === "PENDING"
                     ? "bg-yellow-500/20 text-yellow-400"
                     : booking.status === "CONFIRMED"
-                    ? "bg-blue-500/20 text-blue-400"
-                    : booking.status === "COMPLETED"
-                    ? "bg-green-500/20 text-green-400"
-                    : "bg-red-500/20 text-red-400"
+                      ? "bg-blue-500/20 text-blue-400"
+                      : booking.status === "COMPLETED"
+                        ? "bg-green-500/20 text-green-400"
+                        : "bg-red-500/20 text-red-400"
                 }`}
               >
                 {booking.status}
