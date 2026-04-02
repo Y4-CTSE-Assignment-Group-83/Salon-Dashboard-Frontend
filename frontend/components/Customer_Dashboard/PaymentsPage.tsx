@@ -20,7 +20,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
 const API_URL = 'http://ctse-alb-320060941.eu-north-1.elb.amazonaws.com';
-const API_URL2 = 'http://ctse-alb-320060941.eu-north-1.elb.amazonaws.com';
+// const API_URL2 = 'http://ctse-alb-320060941.eu-north-1.elb.amazonaws.com';
 
 type JsPDFWithAutoTable = jsPDF & {
   lastAutoTable?: {
@@ -73,7 +73,7 @@ export default function CustomerPaymentsPage() {
 
   const fetchCompletedPayments = async () => {
     try {
-      const response = await axios.get(`${API_URL2}/api/payments/all`);
+      const response = await axios.get(`${API_URL}/api/payments/all`);
       // Assuming the API returns { success: true, data: Payment[] }
        // response.data is the array
     const payments = Array.isArray(response.data) ? response.data : [];
@@ -97,7 +97,7 @@ export default function CustomerPaymentsPage() {
 
     setProcessing(booking._id);
     try {
-      const response = await axios.post(`${API_URL2}/api/payments/create`, {
+      const response = await axios.post(`${API_URL}/api/payments/create`, {
         bookingId: booking._id,
         amount: booking.servicePrice,
         customerEmail: booking.customerEmail || user?.email,
@@ -205,9 +205,9 @@ export default function CustomerPaymentsPage() {
     // Receipt info
     doc.setFontSize(10);
     doc.setTextColor(107, 114, 128);
-    doc.text(`Receipt #: RCP-${payment._id.slice(-8)}`, 20, 75);
+    doc.text(`Receipt #: RCP-${payment.paymentId.slice(-8)}`, 20, 75);
     doc.text(`Date: ${formatDateTime(payment.paidAt || payment.createdAt)}`, 20, 82);
-    doc.text(`Transaction ID: ${payment.transactionId || payment._id.slice(-8)}`, 20, 89);
+    doc.text(`Transaction ID: ${payment.transactionId || payment.paymentId.slice(-8)}`, 20, 89);
     
     if (payment.lemonSqueezyOrderId) {
       doc.text(`Order ID: ${payment.lemonSqueezyOrderId}`, 20, 96);
@@ -316,7 +316,7 @@ export default function CustomerPaymentsPage() {
     doc.text(`Generated on: ${new Date().toLocaleString()}`, pageWidth / 2, finalY + 25, { align: 'center' });
     
     // Save the PDF
-    doc.save(`receipt-${payment._id.slice(-8)}.pdf`);
+    doc.save(`receipt-${payment.paymentId.slice(-8)}.pdf`);
   };
 
   const fetchBookingForPayment = async (bookingId: string): Promise<Booking | null> => {
@@ -543,7 +543,7 @@ export default function CustomerPaymentsPage() {
             <div className="space-y-4">
               {completedPayments.map((payment, index) => (
                 <motion.div
-                  key={payment._id}
+                  key={payment.paymentId}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
@@ -565,7 +565,7 @@ export default function CustomerPaymentsPage() {
                         <div>
                           <p className="text-xs text-rose-600 dark:text-rose-400">Transaction ID</p>
                           <p className="text-sm font-medium text-rose-900 dark:text-rose-100 truncate">
-                            {payment.transactionId || payment._id.slice(-8)}
+                            {payment.transactionId || payment.paymentId.slice(-8)}
                           </p>
                         </div>
                         <div>
@@ -734,7 +734,7 @@ export default function CustomerPaymentsPage() {
                   <div>
                     <p className="text-xs text-rose-600 dark:text-rose-400">Transaction ID</p>
                     <p className="font-mono text-sm font-medium text-rose-900 dark:text-rose-100">
-                      {selectedPayment.transactionId || selectedPayment._id.slice(-8)}
+                      {selectedPayment.transactionId || selectedPayment.paymentId.slice(-8)}
                     </p>
                   </div>
                   <div>

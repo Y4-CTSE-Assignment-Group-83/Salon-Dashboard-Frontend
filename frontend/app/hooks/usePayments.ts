@@ -1,249 +1,260 @@
-import { useState, useEffect, useCallback } from 'react';
-import { toast } from 'react-toastify';
-import { Booking, Payment, PaymentStats, PaymentFilters } from '../types/payment';
+'use client';
 
-const API_URL = 'http://localhost:5002';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { toast } from 'react-toastify';
+import {
+  Payment,
+  PaymentStats,
+  PaymentFilters,
+  PaymentStatus,
+  UpdatePaymentRequest,
+} from '../types/payment';
+
+const API_URL = 'http://ctse-alb-320060941.eu-north-1.elb.amazonaws.com';
+
+const normalizeStatus = (status?: string): PaymentStatus => {
+  const value = (status || '').toUpperCase();
+
+  if (value === 'COMPLETED') return 'COMPLETED';
+  if (value === 'PROCESSING') return 'PROCESSING';
+  if (value === 'FAILED') return 'FAILED';
+  if (value === 'REFUNDED') return 'REFUNDED';
+  return 'PENDING';
+};
 
 export const usePayments = () => {
-  const [bookings, setBookings] = useState<Booking[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
-  const [stats, setStats] = useState<PaymentStats>({
-    totalRevenue: 0,
-    totalPayments: 0,
-    pendingPayments: 0,
-    completedPayments: 0,
-    refundedAmount: 0,
-    todayRevenue: 0,
-    weeklyRevenue: 0,
-    monthlyRevenue: 0,
-  });
-  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [filters, setFilters] = useState<PaymentFilters>({});
+  const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
 
   const handleResponse = async (response: Response) => {
-    const data = await response.json();
+    const contentType = response.headers.get('content-type') || '';
+    const data = contentType.includes('application/json')
+      ? await response.json()
+      : await response.text();
 
     if (!response.ok) {
-      throw new Error(data?.message || 'Request failed');
+      const errorMessage =
+        typeof data === 'object' && data !== null && 'message' in data
+          ? String(data.message)
+          : 'Request failed';
+      throw new Error(errorMessage);
     }
 
     return data;
   };
-const getErrorMessage = (error: unknown): string => {
-    if (error instanceof Error) {
-      return error.message;
-    }
+
+  const getErrorMessage = (error: unknown): string => {
+    if (error instanceof Error) return error.message;
     return 'Something went wrong';
   };
-  // Fetch all bookings
-  const fetchBookings = useCallback(async () => {
+
+  const fetchPayments = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_URL}/api/bookings`);
+      const response = await fetch(`${API_URL}/api/payments/all`, {
+        cache: 'no-store',
+      });
       const data = await handleResponse(response);
-      setBookings(data.data);
+
+      const normalized: Payment[] = Array.isArray(data)
+        ? data.map((item: Payment) => ({
+            ...item,
+            status: normalizeStatus(item.status),
+          }))
+        : [];
+
+      setPayments(normalized);
     } catch (error: unknown) {
-      console.error('Error fetching bookings:', error);
-      toast.error(getErrorMessage(error) || 'Failed to load bookings');
+      console.error('Error fetching payments:', error);
+      toast.error(getErrorMessage(error) || 'Failed to load payments');
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Fetch payments
-  const fetchPayments = useCallback(async () => {
+  const updatePayment = async (id: string, payload: UpdatePaymentRequest) => {
     try {
-      const response = await fetch(`${API_URL}/api/payments`);
-      const data = await handleResponse(response);
-      setPayments(data.data);
-    } catch (error: unknown) {
-      console.error('Error fetching payments:', error);
-    }
-  }, []);
+      setProcessing(true);
 
-  // Calculate statistics
-  const calculateStats = useCallback(() => {
-    const currentDate = new Date();
-
-    const todayStart = new Date();
-    todayStart.setHours(0, 0, 0, 0);
-
-    const weekAgo = new Date();
-    weekAgo.setDate(weekAgo.getDate() - 7);
-
-    const monthAgo = new Date();
-    monthAgo.setMonth(monthAgo.getMonth() - 1);
-
-    const paidBookings = bookings.filter(
-      (booking) => booking.paymentStatus === 'COMPLETED'
-    );
-
-    const pendingBookings = bookings.filter(
-      (booking) => booking.paymentStatus === 'PENDING'
-    );
-
-    const todayRevenue = paidBookings
-      .filter((booking) => {
-        if (!booking.paymentDate) return false;
-        const paymentDate = new Date(booking.paymentDate);
-        paymentDate.setHours(0, 0, 0, 0);
-        return paymentDate.getTime() === todayStart.getTime();
-      })
-      .reduce((sum, booking) => sum + booking.servicePrice, 0);
-
-    const weeklyRevenue = paidBookings
-      .filter((booking) => {
-        if (!booking.paymentDate) return false;
-        return new Date(booking.paymentDate) >= weekAgo;
-      })
-      .reduce((sum, booking) => sum + booking.servicePrice, 0);
-
-    const monthlyRevenue = paidBookings
-      .filter((booking) => {
-        if (!booking.paymentDate) return false;
-        return new Date(booking.paymentDate) >= monthAgo;
-      })
-      .reduce((sum, booking) => sum + booking.servicePrice, 0);
-
-    setStats({
-      totalRevenue: paidBookings.reduce(
-        (sum, booking) => sum + booking.servicePrice,
-        0
-      ),
-      totalPayments: paidBookings.length,
-      pendingPayments: pendingBookings.length,
-      completedPayments: paidBookings.length,
-      refundedAmount: bookings
-        .filter((booking) => booking.paymentStatus === 'Refunded')
-        .reduce((sum, booking) => sum + booking.servicePrice, 0),
-      todayRevenue,
-      weeklyRevenue,
-      monthlyRevenue,
-    });
-  }, [bookings]);
-
-  // Process payment
-  const processPayment = async (booking: Booking) => {
-    if (booking.paymentStatus === 'COMPLETED') {
-      toast.info('This booking is already paid');
-      return null;
-    }
-
-    setProcessing(true);
-
-    try {
-      const response = await fetch(`${API_URL}/api/payments/create`, {
-        method: 'POST',
+      const response = await fetch(`${API_URL}/api/payments/${id}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          bookingId: booking._id,
-          amount: booking.servicePrice,
-          customerEmail: booking.customerEmail || booking.customerName,
-          customerName: booking.customerName,
-          variantId: '1408974',
-        }),
+        body: JSON.stringify(payload),
       });
 
-      const payment = await handleResponse(response);
+      const updatedPayment = await handleResponse(response);
 
-      if (payment.checkoutUrl) {
-        window.location.href = payment.checkoutUrl;
-      }
+      setPayments((prev) =>
+        prev.map((payment) =>
+          payment.paymentId === id
+            ? { ...updatedPayment, status: normalizeStatus(updatedPayment.status) }
+            : payment
+        )
+      );
 
-      return payment;
+      setSelectedPayment((prev) =>
+        prev?.paymentId === id
+          ? { ...updatedPayment, status: normalizeStatus(updatedPayment.status) }
+          : prev
+      );
+
+      toast.success('Payment updated successfully');
+      return updatedPayment;
     } catch (error: unknown) {
-       console.error('Payment error:', error);
-      toast.error(getErrorMessage(error) || 'Failed to process payment');
+      console.error('Error updating payment:', error);
+      toast.error(getErrorMessage(error) || 'Failed to update payment');
       return null;
     } finally {
       setProcessing(false);
     }
   };
 
-  // Update payment status
-  const updatePaymentStatus = async (bookingId: string, status: string) => {
+  const deletePayment = async (id: string) => {
     try {
-      const response = await fetch(`${API_URL}/api/bookings/${bookingId}/payment`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          paymentStatus: status,
-        }),
+      setProcessing(true);
+
+      const response = await fetch(`${API_URL}/api/payments/${id}`, {
+        method: 'DELETE',
       });
 
       await handleResponse(response);
-      await fetchBookings();
-      toast.success('Payment status updated');
+
+      setPayments((prev) => prev.filter((payment) => payment.paymentId !== id));
+
+      setSelectedPayment((prev) => (prev?.paymentId === id ? null : prev));
+
+      toast.success('Payment deleted successfully');
+      return true;
     } catch (error: unknown) {
-      console.error('Error updating payment:', error);
-      toast.error(getErrorMessage(error) || 'Failed to update payment status');
+      console.error('Error deleting payment:', error);
+      toast.error(getErrorMessage(error) || 'Failed to delete payment');
+      return false;
+    } finally {
+      setProcessing(false);
     }
   };
 
-  // Filter bookings
-  const filteredBookings = bookings.filter((booking) => {
-    if (
-      filters.status &&
-      filters.status !== 'all' &&
-      booking.paymentStatus !== filters.status
-    ) {
-      return false;
-    }
+  const filteredPayments = useMemo(() => {
+    return payments.filter((payment) => {
+      if (
+        filters.status &&
+        filters.status !== 'all' &&
+        normalizeStatus(payment.status) !== normalizeStatus(filters.status)
+      ) {
+        return false;
+      }
 
-    if (
-      filters.customerName &&
-      !booking.customerName
-        .toLowerCase()
-        .includes(filters.customerName.toLowerCase())
-    ) {
-      return false;
-    }
+      if (
+        filters.customerName &&
+        !payment.customerName
+          .toLowerCase()
+          .includes(filters.customerName.toLowerCase())
+      ) {
+        return false;
+      }
 
-    if (
-      filters.dateFrom &&
-      new Date(booking.appointmentDate) < new Date(filters.dateFrom)
-    ) {
-      return false;
-    }
+      if (filters.dateFrom) {
+        const fromDate = new Date(filters.dateFrom);
+        const createdAt = new Date(payment.createdAt);
+        if (createdAt < fromDate) return false;
+      }
 
-    if (
-      filters.dateTo &&
-      new Date(booking.appointmentDate) > new Date(filters.dateTo)
-    ) {
-      return false;
-    }
+      if (filters.dateTo) {
+        const toDate = new Date(filters.dateTo);
+        toDate.setHours(23, 59, 59, 999);
+        const createdAt = new Date(payment.createdAt);
+        if (createdAt > toDate) return false;
+      }
 
-    return true;
-  });
+      return true;
+    });
+  }, [payments, filters]);
+
+  const stats = useMemo<PaymentStats>(() => {
+    const now = new Date();
+
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    const weekAgo = new Date(now);
+    weekAgo.setDate(weekAgo.getDate() - 7);
+
+    const monthAgo = new Date(now);
+    monthAgo.setMonth(monthAgo.getMonth() - 1);
+
+    const completedPayments = payments.filter(
+      (payment) => normalizeStatus(payment.status) === 'COMPLETED'
+    );
+
+    const pendingPayments = payments.filter(
+      (payment) => normalizeStatus(payment.status) === 'PENDING'
+    );
+
+    const refundedPayments = payments.filter(
+      (payment) => normalizeStatus(payment.status) === 'REFUNDED'
+    );
+
+    const todayRevenue = completedPayments
+      .filter((payment) => {
+        const date = new Date(payment.paidAt || payment.updatedAt || payment.createdAt);
+        date.setHours(0, 0, 0, 0);
+        return date.getTime() === todayStart.getTime();
+      })
+      .reduce((sum, payment) => sum + Number(payment.amount || 0), 0);
+
+    const weeklyRevenue = completedPayments
+      .filter((payment) => {
+        const date = new Date(payment.paidAt || payment.updatedAt || payment.createdAt);
+        return date >= weekAgo;
+      })
+      .reduce((sum, payment) => sum + Number(payment.amount || 0), 0);
+
+    const monthlyRevenue = completedPayments
+      .filter((payment) => {
+        const date = new Date(payment.paidAt || payment.updatedAt || payment.createdAt);
+        return date >= monthAgo;
+      })
+      .reduce((sum, payment) => sum + Number(payment.amount || 0), 0);
+
+    return {
+      totalRevenue: completedPayments.reduce(
+        (sum, payment) => sum + Number(payment.amount || 0),
+        0
+      ),
+      totalPayments: payments.length,
+      pendingPayments: pendingPayments.length,
+      completedPayments: completedPayments.length,
+      refundedAmount: refundedPayments.reduce(
+        (sum, payment) => sum + Number(payment.amount || 0),
+        0
+      ),
+      todayRevenue,
+      weeklyRevenue,
+      monthlyRevenue,
+    };
+  }, [payments]);
 
   useEffect(() => {
-    fetchBookings();
     fetchPayments();
-  }, [fetchBookings, fetchPayments]);
-
-  useEffect(() => {
-    calculateStats();
-  }, [bookings, calculateStats]);
+  }, [fetchPayments]);
 
   return {
-    bookings,
-    filteredBookings,
     payments,
+    filteredPayments,
     loading,
     processing,
     stats,
-    selectedBooking,
     filters,
+    selectedPayment,
     setFilters,
-    setSelectedBooking,
-    processPayment,
-    updatePaymentStatus,
-    refreshData: fetchBookings,
+    setSelectedPayment,
+    updatePayment,
+    deletePayment,
+    refreshData: fetchPayments,
   };
 };

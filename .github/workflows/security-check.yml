@@ -31,7 +31,7 @@ jobs:
         run: pnpm install
 
       - name: 🔍 Run pnpm audit
-        run: pnpm audit --audit-level=moderate
+        run: pnpm audit --prod --audit-level=high
 
       - name: 📦 Setup Python for Semgrep
         uses: actions/setup-python@v5
