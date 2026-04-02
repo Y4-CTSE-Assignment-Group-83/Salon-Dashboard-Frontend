@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { useAuthContext } from "@/app/context/AuthContext";
 
@@ -32,14 +32,14 @@ export default function MyAppointmentsPage() {
   /* ===========================
      FETCH BOOKINGS
   =========================== */
-  const fetchBookings = async () => {
+  const fetchBookings = useCallback(async () => {
     try {
       const res = await axios.get(API_URL);
 
       const allBookings = res.data?.data || [];
 
       const userBookings = allBookings.filter(
-        (b: Booking) => b.customerEmail === user?.email
+        (b: Booking) => b.customerEmail === user?.email,
       );
 
       setBookings(userBookings);
@@ -47,11 +47,13 @@ export default function MyAppointmentsPage() {
       console.error("FETCH ERROR:", error);
       setBookings([]);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
-    if (user) fetchBookings();
-  }, [user]);
+    if (user) {
+      fetchBookings();
+    }
+  }, [user, fetchBookings]);
 
   /* ===========================
      CANCEL BOOKING
@@ -94,14 +96,10 @@ export default function MyAppointmentsPage() {
   /* ===========================
      FILTER BY TAB
   =========================== */
-  const filteredBookings = bookings.filter(
-    (b) => b.status === activeTab
-  );
+  const filteredBookings = bookings.filter((b) => b.status === activeTab);
 
   const tabStyle = (tab: string) =>
-    `px-4 py-2 rounded ${
-      activeTab === tab ? "bg-blue-600" : "bg-gray-800"
-    }`;
+    `px-4 py-2 rounded ${activeTab === tab ? "bg-blue-600" : "bg-gray-800"}`;
 
   if (loading) return <p className="text-white p-6">Loading...</p>;
 
@@ -111,19 +109,31 @@ export default function MyAppointmentsPage() {
 
       {/* 🔥 TABS */}
       <div className="flex gap-3 mb-6 flex-wrap">
-        <button onClick={() => setActiveTab("PENDING")} className={tabStyle("PENDING")}>
+        <button
+          onClick={() => setActiveTab("PENDING")}
+          className={tabStyle("PENDING")}
+        >
           Pending
         </button>
 
-        <button onClick={() => setActiveTab("CONFIRMED")} className={tabStyle("CONFIRMED")}>
+        <button
+          onClick={() => setActiveTab("CONFIRMED")}
+          className={tabStyle("CONFIRMED")}
+        >
           Confirmed
         </button>
 
-        <button onClick={() => setActiveTab("COMPLETED")} className={tabStyle("COMPLETED")}>
+        <button
+          onClick={() => setActiveTab("COMPLETED")}
+          className={tabStyle("COMPLETED")}
+        >
           Completed
         </button>
 
-        <button onClick={() => setActiveTab("CANCELED")} className={tabStyle("CANCELED")}>
+        <button
+          onClick={() => setActiveTab("CANCELED")}
+          className={tabStyle("CANCELED")}
+        >
           Canceled
         </button>
       </div>
@@ -142,12 +152,8 @@ export default function MyAppointmentsPage() {
           >
             {/* LEFT */}
             <div>
-              <h2 className="text-lg font-semibold">
-                {booking.serviceName}
-              </h2>
-              <p className="text-gray-400 text-sm">
-                {booking.serviceCategory}
-              </p>
+              <h2 className="text-lg font-semibold">{booking.serviceName}</h2>
+              <p className="text-gray-400 text-sm">{booking.serviceCategory}</p>
               <p className="text-xs text-gray-400">
                 {new Date(booking.appointmentDate).toLocaleString()}
               </p>
@@ -168,10 +174,10 @@ export default function MyAppointmentsPage() {
                   booking.status === "PENDING"
                     ? "bg-yellow-500/20 text-yellow-400"
                     : booking.status === "CONFIRMED"
-                    ? "bg-blue-500/20 text-blue-400"
-                    : booking.status === "COMPLETED"
-                    ? "bg-green-500/20 text-green-400"
-                    : "bg-red-500/20 text-red-400"
+                      ? "bg-blue-500/20 text-blue-400"
+                      : booking.status === "COMPLETED"
+                        ? "bg-green-500/20 text-green-400"
+                        : "bg-red-500/20 text-red-400"
                 }`}
               >
                 {booking.status}
@@ -186,7 +192,7 @@ export default function MyAppointmentsPage() {
                       setNewDate(
                         new Date(booking.appointmentDate)
                           .toISOString()
-                          .slice(0, 16)
+                          .slice(0, 16),
                       );
                     }}
                     className="px-3 py-1 text-xs bg-blue-600 rounded"
