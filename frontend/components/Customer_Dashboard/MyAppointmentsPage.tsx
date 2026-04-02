@@ -34,13 +34,15 @@ export default function MyAppointmentsPage() {
      FETCH BOOKINGS
   =========================== */
   const fetchBookings = useCallback(async () => {
+    if (!user?.email) return;
+
     try {
       const res = await axios.get(API_URL);
 
       const allBookings = res.data?.data || [];
 
       const userBookings = allBookings.filter(
-        (b: Booking) => b.customerEmail === user?.email,
+        (b: Booking) => b.customerEmail === user.email,
       );
 
       setBookings(userBookings);
@@ -51,10 +53,8 @@ export default function MyAppointmentsPage() {
   }, [user]);
 
   useEffect(() => {
-    if (user) {
-      fetchBookings();
-    }
-  }, [user, fetchBookings]);
+    fetchBookings();
+  }, [fetchBookings]);
 
   /* ===========================
      CANCEL BOOKING
