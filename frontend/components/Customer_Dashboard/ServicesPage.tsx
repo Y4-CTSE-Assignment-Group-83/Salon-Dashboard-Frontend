@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 
 interface Service {
   _id: string;
@@ -19,6 +20,7 @@ const API_URL =
 export default function ServicesPage() {
   const [services, setServices] = useState<Service[]>([]);
   const [search, setSearch] = useState("");
+  const router = useRouter();
 
   // 🔄 Fetch services
   const fetchServices = async () => {
@@ -47,10 +49,13 @@ export default function ServicesPage() {
     s.name.toLowerCase().includes(search.toLowerCase()),
   );
 
+ // 📅 Book button handler
   const handleBook = (service: Service) => {
-    console.log("Booking:", service);
-    alert(`Booking ${service.name}`);
-  };
+  router.push(
+    `/dashboards/customer?tab=appointments&serviceId=${service._id}&name=${service.name}&price=${service.price}&duration=${service.duration}&category=${service.category}`
+  );
+};
+
 
   return (
     <div className="p-6 text-white">
