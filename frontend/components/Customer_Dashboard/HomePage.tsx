@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import Image from "next/image";
+import Image, { StaticImageData } from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Star,
@@ -14,8 +14,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Calendar,
-  User,
-  MapPin,
 } from "lucide-react";
 
 // ============================================
@@ -44,6 +42,34 @@ import stylist3 from "../../assets/home/banner3.svg";
 import logoImage from "../../assets/home/image1.svg";
 
 // ============================================
+// TYPE DEFINITIONS
+// ============================================
+interface ImageRotatorProps {
+  images: StaticImageData[];
+  interval?: number;
+  title?: string;
+  subtitle?: string;
+}
+
+interface HorizontalScrollGalleryProps {
+  images: StaticImageData[];
+}
+
+interface BigFeatureCardProps {
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  description: string;
+  color: string;
+  onClick?: () => void;
+}
+
+interface StatCardProps {
+  value: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+}
+
+// ============================================
 // DYNAMIC IMAGE ROTATOR COMPONENT
 // ============================================
 const DynamicImageRotator = ({
@@ -51,12 +77,7 @@ const DynamicImageRotator = ({
   interval = 5000,
   title,
   subtitle,
-}: {
-  images: any[]; // Changed to accept StaticImageData type
-  interval?: number;
-  title?: string;
-  subtitle?: string;
-}) => {
+}: ImageRotatorProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(1);
 
@@ -164,7 +185,7 @@ const DynamicImageRotator = ({
 // ============================================
 // HORIZONTAL SCROLLING GALLERY
 // ============================================
-const HorizontalScrollGallery = ({ images }: { images: any[] }) => {
+const HorizontalScrollGallery = ({ images }: HorizontalScrollGalleryProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const scroll = (direction: "left" | "right") => {
@@ -234,13 +255,7 @@ const BigFeatureCard = ({
   description,
   color,
   onClick,
-}: {
-  icon: any;
-  title: string;
-  description: string;
-  color: string;
-  onClick?: () => void;
-}) => {
+}: BigFeatureCardProps) => {
   return (
     <motion.div
       whileHover={{ scale: 1.02, y: -5 }}
@@ -272,15 +287,7 @@ const BigFeatureCard = ({
 // ============================================
 // STATS CARD
 // ============================================
-const StatCard = ({
-  value,
-  label,
-  icon: Icon,
-}: {
-  value: string;
-  label: string;
-  icon: any;
-}) => {
+const StatCard = ({ value, label, icon: Icon }: StatCardProps) => {
   return (
     <motion.div
       whileHover={{ y: -3 }}
@@ -302,10 +309,10 @@ const StatCard = ({
 // ============================================
 const HomePage = () => {
   // Hero/Slider Images - Replace with your actual imported images
-  const heroImages = [hero1, hero2, hero3, hero4];
+  const heroImages: StaticImageData[] = [hero1, hero2, hero3, hero4];
 
   // Gallery Images
-  const galleryImages = [
+  const galleryImages: StaticImageData[] = [
     gallery1,
     gallery2,
     gallery3,
@@ -315,10 +322,7 @@ const HomePage = () => {
   ];
 
   // Vertical Stylist Images
-  const verticalImages = [stylist1, stylist2, stylist3];
-
-  // If your actual images aren't ready yet, use placeholder with logo
-  const hasActualImages = hero1 !== logoImage; // Simple check
+  const verticalImages: StaticImageData[] = [stylist1, stylist2, stylist3];
 
   return (
     <div className="space-y-12 pb-12 px-6">
