@@ -612,7 +612,7 @@ const HomePage = () => {
                 ))}
               </div>
               <p className="text-gray-600 dark:text-gray-300 italic">
-                "{testimonial.text}"
+                &ldquo;{testimonial.text}&rdquo;
               </p>
               <div className="mt-4 flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-rose-400 to-amber-400" />
