@@ -1,7 +1,7 @@
 import axios, { AxiosInstance } from "axios";
 
 const api: AxiosInstance = axios.create({
-  baseURL: "http://ctse-alb-320060941.eu-north-1.elb.amazonaws.com/api",
+  baseURL: "http://ctse-alb-73961598.eu-north-1.elb.amazonaws.com/api",
   withCredentials: true, // ✅ Important: Send cookies with every request
   headers: {
     "Content-Type": "application/json",
